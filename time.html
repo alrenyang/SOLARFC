@@ -26,7 +26,7 @@
             overflow-x: hidden;
         }
 
-        /* ── 사이드바 스타일 (모바일 철저 방어) ── */
+        /* ── 사이드바 스타일 ── */
         aside {
             width: var(--sidebar-width);
             background-color: #1e293b;
@@ -36,10 +36,9 @@
             transition: transform 0.3s ease;
             position: fixed;
             top: 0; bottom: 0; left: 0;
-            z-index: 1000; /* 모바일에서 최상단으로 띄움 */
+            z-index: 1000;
         }
 
-        /* PC에서 접기용 클래스 */
         aside.collapsed {
             transform: translateX(calc(var(--sidebar-width) * -1));
         }
@@ -82,20 +81,50 @@
             justify-content: space-between;
             align-items: center;
             border-bottom: 1px solid var(--border-color);
+            gap: 10px;
         }
 
-        .header-left { display: flex; align-items: center; gap: 15px; }
+        .header-left { 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            min-width: 0; /* flex 자식 유연화 처리 */
+            flex: 1;
+        }
 
         .btn-toggle-sidebar {
             background: none; border: none; font-size: 24px; cursor: pointer; color: #333;
             display: flex; align-items: center; justify-content: center; padding: 5px; border-radius: 4px;
+            flex-shrink: 0;
         }
         .btn-toggle-sidebar:hover { background-color: #f1f5f9; }
 
-        .user-section { display: flex; align-items: center; gap: 10px; }
+        /* ✨ 모든 스마트폰 화면에서 무조건 한 줄 고정 헤더 타이틀 스타일 */
+        header h2 {
+            font-size: clamp(15px, 4.5vw, 20px); /* 화면 크기에 맞게 15px~20px 사이로 자동 조절 */
+            font-weight: 700;
+            white-space: nowrap; /* 💥 절대 두 줄로 줄바꿈 금지 */
+            overflow: hidden;
+            text-overflow: ellipsis; /* 혹시 모를 오버플로우 발생 시 말줄임 기호(...) 방어 */
+            min-width: 0;
+        }
+
+        .user-section { 
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+            flex-shrink: 0; /* 우측 영역 크기 고정 */
+        }
+        
+        #user-info {
+            font-size: clamp(12px, 3.2vw, 14px);
+            white-space: nowrap;
+        }
+
         .btn-logout {
             background: none; border: 1px solid #dc3545; color: #dc3545;
-            padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px;
+            padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 12px;
+            white-space: nowrap;
         }
         .btn-logout:hover { background-color: #dc3545; color: white; }
 
@@ -103,10 +132,10 @@
             width: 100%;
             max-width: 800px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 15px;
         }
 
-        /* ── 주간 달력 (모바일 자릿수 터짐 방지) ── */
+        /* ── 주간 달력 ── */
         .week-container {
             background-color: var(--card-bg);
             border-radius: 12px;
@@ -125,7 +154,7 @@
         .week-days {
             display: flex;
             justify-content: space-between;
-            gap: 4px; /* 모바일 대응 간격 축소 */
+            gap: 4px;
         }
 
         .day-tab {
@@ -139,7 +168,7 @@
             transition: all 0.2s;
             background: none;
             border: none;
-            min-width: 0; /* 모바일에서 찌그러짐 방지 */
+            min-width: 0;
         }
 
         .day-tab .day-name {
@@ -190,21 +219,16 @@
         }
         .btn-reserve:disabled { background-color: #cbd5e1; cursor: not-allowed; color: #94a3b8; }
 
-        /* 📱 ── 스마트폰 반응형 브레이크포인트 완벽 매칭 ── */
+        /* 📱 스마트폰 반응형 브레이크포인트 */
         @media (max-width: 768px) {
             aside {
-                /* 모바일에서 기본적으로 사이드바 완전히 숨김 */
                 transform: translateX(-100%);
             }
-            /* 열림 모드 클래스 */
             aside.mobile-active {
                 transform: translateX(0);
             }
             .wrapper {
-                margin-left: 0 !important; /* 모바일에서 강제 여백 제거 */
-            }
-            header h2 {
-                font-size: 18px;
+                margin-left: 0 !important;
             }
             .timeline-card {
                 padding: 12px;
@@ -264,9 +288,8 @@
             const toggleBtn = document.getElementById('btn-toggle');
 
             if (toggleBtn && sidebar && contentWrapper) {
-                // ☰ 토글 버튼을 터치했을 때
                 toggleBtn.addEventListener('click', (e) => {
-                    e.stopPropagation(); // 바깥 클릭 닫힘 센서로 퍼지는 버블링 원천 차단
+                    e.stopPropagation(); 
                     if (window.innerWidth <= 768) {
                         sidebar.classList.toggle('mobile-active');
                     } else {
@@ -276,12 +299,10 @@
                 });
             }
 
-            // 사이드바 내부를 터치할 때는 닫히지 않도록 이벤트 방어
             sidebar.addEventListener('click', (e) => {
                 e.stopPropagation();
             });
 
-            // ✨ [핵심 해결] 사이드바 외부 어디든 터치하면 사이드바 닫히게 처리
             document.addEventListener('click', () => {
                 if (window.innerWidth <= 768) {
                     sidebar.classList.remove('mobile-active');
