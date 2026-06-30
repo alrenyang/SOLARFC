@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FC CREW - 로그인 & 회원가입</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-color: #212529;
+            --border-color: #dee2e6;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .login-container {
+            background-color: var(--card-bg);
+            width: 100%;
+            max-width: 400px;
+            padding: 40px 30px;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+            text-align: center;
+        }
+        .logo-area { margin-bottom: 30px; }
+        .logo-area .icon { font-size: 48px; margin-bottom: 10px; }
+        .logo-area h2 { font-size: 24px; font-weight: 700; color: #111; }
+        .logo-area p { font-size: 14px; color: #6c757d; margin-top: 5px; }
+        .tab-menu { display: flex; margin-bottom: 25px; border-bottom: 2px solid var(--border-color); }
+        .tab-btn {
+            flex: 1; padding: 12px; background: none; border: none;
+            font-size: 16px; font-weight: 500; color: #6c757d; cursor: pointer; outline: none;
+        }
+        .tab-btn.active {
+            color: var(--primary-color); border-bottom: 2px solid var(--primary-color);
+            margin-bottom: -2px; font-weight: 700;
+        }
+        .input-group { margin-bottom: 16px; text-align: left; }
+        .input-group label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px; color: #495057; }
+        .input-group input {
+            width: 100%; padding: 14px; font-size: 15px; border: 1px solid var(--border-color);
+            border-radius: 8px; background-color: #fff; outline: none; transition: border-color 0.2s;
+        }
+        .input-group input:focus { border-color: var(--primary-color); }
+        .signup-only { display: none; }
+        .btn-submit {
+            width: 100%; padding: 14px; font-size: 16px; font-weight: 700; color: #fff;
+            background-color: var(--primary-color); border: none; border-radius: 8px;
+            cursor: pointer; margin-top: 10px; transition: background-color 0.2s;
+        }
+        .btn-submit:hover { background-color: #0056b3; }
+        .divider { display: flex; align-items: center; margin: 25px 0; color: #adb5bd; font-size: 12px; }
+        .divider::before, .divider::after { content: ""; flex: 1; height: 1px; background-color: var(--border-color); }
+        .divider span { padding: 0 10px; }
+        .btn-google {
+            width: 100%; padding: 12px; font-size: 14px; font-weight: 500; color: #3c4043;
+            background-color: #fff; border: 1px solid #dadce0; border-radius: 8px;
+            cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; transition: background-color 0.2s;
+        }
+        .btn-google:hover { background-color: #f8f9fa; }
+        .btn-google img { width: 18px; height: 18px; }
+    </style>
+</head>
+<body>
+
+    <div class="login-container">
+        <div class="logo-area">
+            <div class="icon">⚽</div>
+            <h2>FC CREW</h2>
+            <p id="sub-title">클럽 회원 관리 시스템</p>
+        </div>
+
+        <div class="tab-menu">
+            <button class="tab-btn active" id="tab-login">로그인</button>
+            <button class="tab-btn" id="tab-signup">회원가입</button>
+        </div>
+
+        <form id="auth-form">
+            <div class="input-group signup-only">
+                <label for="user-name">이름</label>
+                <input type="text" id="user-name" placeholder="홍길동">
+            </div>
+
+            <div class="input-group">
+                <label for="user-email">이메일 주소</label>
+                <input type="email" id="user-email" placeholder="example@email.com" required>
+            </div>
+
+            <div class="input-group">
+                <label for="user-password">비밀번호</label>
+                <input type="password" id="user-password" placeholder="6자리 이상 입력하세요" required>
+            </div>
+
+            <div class="input-group signup-only">
+                <label for="user-phone">연락처</label>
+                <input type="tel" id="user-phone" placeholder="010-1234-5678">
+            </div>
+
+            <button type="submit" class="btn-submit" id="btn-submit-text">로그인하기</button>
+        </form>
+
+        <div class="divider">
+            <span>또는</span>
+        </div>
+
+        <button class="btn-google" id="btn-google-login">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22Circles%22_Logo,.svg" alt="Google">
+            Google 계정으로 시작하기
+        </button>
+    </div>
+
+    <script type="module" src="auth.js"></script>
+</body>
+</html>
