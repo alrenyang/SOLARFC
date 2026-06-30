@@ -88,7 +88,7 @@
             display: flex; 
             align-items: center; 
             gap: 10px; 
-            min-width: 0; /* flex 자식 유연화 처리 */
+            min-width: 0;
             flex: 1;
         }
 
@@ -99,13 +99,12 @@
         }
         .btn-toggle-sidebar:hover { background-color: #f1f5f9; }
 
-        /* ✨ 모든 스마트폰 화면에서 무조건 한 줄 고정 헤더 타이틀 스타일 */
         header h2 {
-            font-size: clamp(15px, 4.5vw, 20px); /* 화면 크기에 맞게 15px~20px 사이로 자동 조절 */
+            font-size: clamp(15px, 4.5vw, 20px);
             font-weight: 700;
-            white-space: nowrap; /* 💥 절대 두 줄로 줄바꿈 금지 */
+            white-space: nowrap;
             overflow: hidden;
-            text-overflow: ellipsis; /* 혹시 모를 오버플로우 발생 시 말줄임 기호(...) 방어 */
+            text-overflow: ellipsis;
             min-width: 0;
         }
 
@@ -113,7 +112,7 @@
             display: flex; 
             align-items: center; 
             gap: 8px; 
-            flex-shrink: 0; /* 우측 영역 크기 고정 */
+            flex-shrink: 0;
         }
         
         #user-info {
@@ -219,24 +218,12 @@
         }
         .btn-reserve:disabled { background-color: #cbd5e1; cursor: not-allowed; color: #94a3b8; }
 
-        /* 📱 스마트폰 반응형 브레이크포인트 */
         @media (max-width: 768px) {
-            aside {
-                transform: translateX(-100%);
-            }
-            aside.mobile-active {
-                transform: translateX(0);
-            }
-            .wrapper {
-                margin-left: 0 !important;
-            }
-            .timeline-card {
-                padding: 12px;
-            }
-            .time-box {
-                min-width: 70px;
-                font-size: 13px;
-            }
+            aside { transform: translateX(-100%); }
+            aside.mobile-active { transform: translateX(0); }
+            .wrapper { margin-left: 0 !important; }
+            .timeline-card { padding: 12px; }
+            .time-box { min-width: 70px; font-size: 13px; }
         }
     </style>
 </head>
@@ -299,9 +286,7 @@
                 });
             }
 
-            sidebar.addEventListener('click', (e) => {
-                e.stopPropagation();
-            });
+            sidebar.addEventListener('click', (e) => { e.stopPropagation(); });
 
             document.addEventListener('click', () => {
                 if (window.innerWidth <= 768) {
