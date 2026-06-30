@@ -3,123 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FC CREW - 로그인 & 회원가입</title>
+    <title>FC CREW - 메인 스케줄</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary-color: #007bff;
             --bg-color: #f8f9fa;
             --card-bg: #ffffff;
-            --text-color: #212529;
-            --border-color: #dee2e6;
+            --text-color: #333;
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+
         body {
             font-family: 'Noto Sans KR', sans-serif;
             background-color: var(--bg-color);
+            margin: 0;
+            padding: 0;
             color: var(--text-color);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            padding: 20px;
         }
-        .login-container {
+
+        header {
             background-color: var(--card-bg);
-            width: 100%;
-            max-width: 400px;
-            padding: 40px 30px;
-            border-radius: 16px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
-            text-align: center;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #dee2e6;
         }
-        .logo-area { margin-bottom: 30px; }
-        .logo-area .icon { font-size: 48px; margin-bottom: 10px; }
-        .logo-area h2 { font-size: 24px; font-weight: 700; color: #111; }
-        .logo-area p { font-size: 14px; color: #6c757d; margin-top: 5px; }
-        .tab-menu { display: flex; margin-bottom: 25px; border-bottom: 2px solid var(--border-color); }
-        .tab-btn {
-            flex: 1; padding: 12px; background: none; border: none;
-            font-size: 16px; font-weight: 500; color: #6c757d; cursor: pointer; outline: none;
+
+        .user-section {
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
-        .tab-btn.active {
-            color: var(--primary-color); border-bottom: 2px solid var(--primary-color);
-            margin-bottom: -2px; font-weight: 700;
+
+        .btn-logout {
+            background: none;
+            border: 1px solid #dc3545;
+            color: #dc3545;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
         }
-        .input-group { margin-bottom: 16px; text-align: left; }
-        .input-group label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px; color: #495057; }
-        .input-group input {
-            width: 100%; padding: 14px; font-size: 15px; border: 1px solid var(--border-color);
-            border-radius: 8px; background-color: #fff; outline: none; transition: border-color 0.2s;
+        .btn-logout:hover { background-color: #dc3545; color: white; }
+
+        main {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 0 15px;
         }
-        .input-group input:focus { border-color: var(--primary-color); }
-        .signup-only { display: none; }
-        .btn-submit {
-            width: 100%; padding: 14px; font-size: 16px; font-weight: 700; color: #fff;
-            background-color: var(--primary-color); border: none; border-radius: 8px;
-            cursor: pointer; margin-top: 10px; transition: background-color 0.2s;
+
+        .date-selector { margin-bottom: 20px; }
+        .date-selector input[type="date"] {
+            width: 100%; padding: 12px; font-size: 16px;
+            border: 1px solid #ced4da; border-radius: 8px;
         }
-        .btn-submit:hover { background-color: #0056b3; }
-        .divider { display: flex; align-items: center; margin: 25px 0; color: #adb5bd; font-size: 12px; }
-        .divider::before, .divider::after { content: ""; flex: 1; height: 1px; background-color: var(--border-color); }
-        .divider span { padding: 0 10px; }
-        .btn-google {
-            width: 100%; padding: 12px; font-size: 14px; font-weight: 500; color: #3c4043;
-            background-color: #fff; border: 1px solid #dadce0; border-radius: 8px;
-            cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; transition: background-color 0.2s;
+
+        .schedule-card {
+            background: var(--card-bg); border-radius: 12px; padding: 20px;
+            margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            display: flex; justify-content: space-between; align-items: center;
         }
-        .btn-google:hover { background-color: #f8f9fa; }
-        .btn-google img { width: 18px; height: 18px; }
+
+        .schedule-info h4 { margin: 0 0 8px 0; font-size: 18px; }
+        .schedule-info p { margin: 4px 0; color: #6c757d; font-size: 14px; }
+        .badge { background-color: #e2e8f0; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+
+        .btn-reserve {
+            background-color: var(--primary-color); color: white; border: none;
+            padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold;
+        }
+        .btn-reserve:disabled { background-color: #ced4da; cursor: not-allowed; }
     </style>
 </head>
 <body>
 
-    <div class="login-container">
-        <div class="logo-area">
-            <div class="icon">⚽</div>
-            <h2>FC CREW</h2>
-            <p id="sub-title">클럽 회원 관리 시스템</p>
+    <header>
+        <h2>⚽ FC CREW 스케줄</h2>
+        <div class="user-section">
+            <span id="user-info">조회 중...</span>
+            <button class="btn-logout" id="btn-logout">로그아웃</button>
         </div>
+    </header>
 
-        <div class="tab-menu">
-            <button class="tab-btn active" id="tab-login">로그인</button>
-            <button class="tab-btn" id="tab-signup">회원가입</button>
-        </div>
+    <main>
+        <section class="date-selector">
+            <input type="date" id="target-date" value="2026-06-30">
+        </section>
 
-        <form id="auth-form">
-            <div class="input-group signup-only">
-                <label for="user-name">이름</label>
-                <input type="text" id="user-name" placeholder="홍길동">
+        <section class="schedule-container">
+            <h3>선택한 날짜의 세션</h3>
+            <div id="schedule-list">
+                <p>일정을 불러오는 중입니다...</p>
             </div>
+        </section>
+    </main>
 
-            <div class="input-group">
-                <label for="user-email">이메일 주소</label>
-                <input type="email" id="user-email" placeholder="example@email.com" required>
-            </div>
-
-            <div class="input-group">
-                <label for="user-password">비밀번호</label>
-                <input type="password" id="user-password" placeholder="6자리 이상 입력하세요" required>
-            </div>
-
-            <div class="input-group signup-only">
-                <label for="user-phone">연락처</label>
-                <input type="tel" id="user-phone" placeholder="010-1234-5678">
-            </div>
-
-            <button type="submit" class="btn-submit" id="btn-submit-text">로그인하기</button>
-        </form>
-
-        <div class="divider">
-            <span>또는</span>
-        </div>
-
-        <button class="btn-google" id="btn-google-login">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22Circles%22_Logo,.svg" alt="Google">
-            Google 계정으로 시작하기
-        </button>
-    </div>
-
-    <script type="module" src="auth.js"></script>
+    <script type="module" src="main.js"></script>
 </body>
 </html>

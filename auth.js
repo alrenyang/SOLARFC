@@ -1,8 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// ⚠️ 중요: Firebase 콘솔에서 발급받은 본인의 프로젝트 Key 정보들로 채워주세요!
+// Firebase 프로젝트 설정값 (정확히 잘 반영되었습니다!)
 const firebaseConfig = {
     apiKey: "AIzaSyDn7oGNdD02WceJwIvz_zNitJx5bATD8jY",
     authDomain: "solrafc.firebaseapp.com",
@@ -12,9 +11,8 @@ const firebaseConfig = {
     appId: "1:267444798176:web:c85dcf7385aa02e5790685"
 };
 
-// Firebase 모듈 활성화
+// Firebase 및 Firestore 초기화
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
 const db = getFirestore(app);
 
 let currentMode = 'login';
@@ -28,115 +26,119 @@ const subTitle = document.getElementById('sub-title');
 const authForm = document.getElementById('auth-form');
 const googleBtn = document.getElementById('btn-google-login');
 
+// 구글 버튼 숨기기
+if (googleBtn) googleBtn.style.display = 'none'; 
+
+// 일반 아이디 양식으로 셋팅
+const emailInput = document.getElementById('user-email');
+if (emailInput) {
+    emailInput.placeholder = "사용할 아이디를 입력하세요";
+    emailInput.type = "text"; 
+}
+
 // 인터랙션: 로그인/회원가입 모드 스위칭
-loginTab.addEventListener('click', () => switchMode('login'));
-signupTab.addEventListener('click', () => switchMode('signup'));
+if (loginTab) loginTab.addEventListener('click', () => switchMode('login'));
+if (signupTab) signupTab.addEventListener('click', () => switchMode('signup'));
 
 function switchMode(mode) {
     currentMode = mode;
     if (mode === 'signup') {
-        loginTab.classList.remove('active');
-        signupTab.classList.add('active');
+        if (loginTab) loginTab.classList.remove('active');
+        if (signupTab) signupTab.classList.add('active');
         signupFields.forEach(field => field.style.display = 'block');
-        submitBtnText.innerText = '회원가입 완료하기';
-        subTitle.innerText = '새로운 크루 멤버 등록';
+        if (submitBtnText) submitBtnText.innerText = '회원가입 완료하기';
+        if (subTitle) subTitle.innerText = '새로운 크루 멤버 등록';
         document.getElementById('user-name').required = true;
         document.getElementById('user-phone').required = true;
     } else {
-        signupTab.classList.remove('active');
-        loginTab.classList.add('active');
+        if (signupTab) signupTab.classList.remove('active');
+        if (loginTab) loginTab.classList.add('active');
         signupFields.forEach(field => field.style.display = 'none');
-        submitBtnText.innerText = '로그인하기';
-        subTitle.innerText = '클럽 회원 관리 시스템';
+        if (submitBtnText) submitBtnText.innerText = '로그인하기';
+        if (subTitle) subTitle.innerText = '클럽 회원 관리 시스템';
         document.getElementById('user-name').required = false;
         document.getElementById('user-phone').required = false;
     }
 }
 
-// 폼 서브밋 처리 (통합 Auth 핸들러)
-authForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    const email = document.getElementById('user-email').value;
-    const password = document.getElementById('user-password').value;
-    
-    if (currentMode === 'signup') {
-        const name = document.getElementById('user-name').value;
-        const phone = document.getElementById('user-phone').value;
+// 폼 서브밋 처리 (자체 DB 기반 로그인/회원가입 로직)
+if (authForm) {
+    authForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
         
-        try {
-            // [Auth] 유저 계정 생성 생성
-            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-            const user = userCredential.user;
+        const userId = document.getElementById('user-email').value.trim(); // 사용자가 입력한 아이디
+        const password = document.getElementById('user-password').value;   // 사용자가 입력한 비밀번호
+        
+        if (currentMode === 'signup') {
+            const name = document.getElementById('user-name').value;
+            const phone = document.getElementById('user-phone').value;
             
-            // [Firestore] 회원 가입 직후 해당 고유 식별자(UID) 매핑 문서 생성
-            await setDoc(doc(db, "users", user.uid), {
-                uid: user.uid,
-                name: name,
-                email: email,
-                phoneNumber: phone,
-                role: 'member', // 기본 권한 일반회원으로 정의 (추후 관리자는 직접 콘솔에서 'admin'으로 변경 가능)
-                joinedDate: new Date().toISOString().split('T')[0]
-            });
-            
-            alert(`⚽ ${name}님, 환영합니다! 회원가입이 완료되었습니다.`);
-            window.location.href = "schedule.html"; // 메인 스케줄 페이지 파일명으로 변경하세요.
-        } catch (error) {
-            console.error("회원가입 에러 발생:", error);
-            alert("회원가입 실패: " + getErrorMessage(error.code));
+            try {
+                // 1. 아이디 중복 체크
+                const userDocRef = doc(db, "users", userId);
+                const userDocSnap = await getDoc(userDocRef);
+                
+                if (userDocSnap.exists()) {
+                    alert("❌ 이미 존재하는 아이디입니다. 다른 아이디를 사용해주세요.");
+                    return;
+                }
+                
+                // 2. 중복이 없다면 Firestore의 'users' 컬렉션에 새 회원 문서 생성
+                await setDoc(userDocRef, {
+                    userId: userId,
+                    password: password, 
+                    name: name,
+                    phoneNumber: phone,
+                    role: 'member', 
+                    joinedDate: new Date().toISOString().split('T')[0]
+                });
+                
+                // [수정 완료] 가입 축하 문구 출력 후, 로그인 화면으로 이동시켜서 다시 로그인하게 유도
+                alert(`⚽ ${name}님, 가입을 축하합니다! 가입하신 아이디로 로그인해 주세요.`);
+                switchMode('login');
+                
+                // 가입 폼 초기화
+                authForm.reset();
+                
+            } catch (error) {
+                console.error("회원가입 처리 중 에러:", error);
+                alert("회원가입에 실패했습니다. 콘솔 로그를 확인하세요.");
+            }
+        } else {
+            // 로그인 로직 진행
+            try {
+                // Firestore에서 사용자가 입력한 ID 문서 가져오기
+                const userDocRef = doc(db, "users", userId);
+                const userDocSnap = await getDoc(userDocRef);
+                
+                if (!userDocSnap.exists()) {
+                    alert("❌ 존재하지 않는 아이디입니다.");
+                    return;
+                }
+                
+                const userData = userDocSnap.data();
+                
+                // 입력한 비밀번호와 DB에 저장된 비밀번호가 일치하는지 비교
+                if (userData.password === password) {
+                    // [수정 완료] 알림창 내용 정상화
+                    alert(`🔓 로그인 성공! ${userData.name}님 환영합니다.`);
+                    
+                    // 로그인 상태를 브라우저 세션에 저장 (index.html에서 확인용)
+                    sessionStorage.setItem("isLoggedIn", "true");
+                    sessionStorage.setItem("userId", userData.userId);
+                    sessionStorage.setItem("userName", userData.name);
+                    sessionStorage.setItem("userRole", userData.role);
+                    
+                    // [수정 완료] 로그인 성공 즉시 index.html 메인 스케줄 페이지로 이동
+                    window.location.href = "index.html";
+                } else {
+                    alert("❌ 비밀번호가 올바르지 않습니다.");
+                }
+                
+            } catch (error) {
+                console.error("로그인 처리 중 에러:", error);
+                alert("로그인 도중 오류가 발생했습니다.");
+            }
         }
-    } else {
-        // 로그인 로직 진행
-        try {
-            await signInWithEmailAndPassword(auth, email, password);
-            alert("🔓 안전하게 로그인되었습니다.");
-            window.location.href = "schedule.html";
-        } catch (error) {
-            console.error("로그인 에러 발생:", error);
-            alert("로그인 실패: " + getErrorMessage(error.code));
-        }
-    }
-});
-
-// 구글 원클릭 소셜 로그인 핸들러
-googleBtn.addEventListener('click', async () => {
-    const provider = new GoogleAuthProvider();
-    try {
-        const result = await signInWithPopup(auth, provider);
-        const user = result.user;
-        
-        // Firestore 데이터 적재 유무 분기 처리 (최초 진입시에만 기록)
-        const userDocRef = doc(db, "users", user.uid);
-        const userDoc = await getDoc(userDocRef);
-        
-        if (!userDoc.exists()) {
-            await setDoc(userDocRef, {
-                uid: user.uid,
-                name: user.displayName || "크루멤버",
-                email: user.email,
-                phoneNumber: user.phoneNumber || "",
-                role: 'member',
-                joinedDate: new Date().toISOString().split('T')[0]
-            });
-        }
-        
-        alert("🔓 소셜 계정으로 로그인되었습니다.");
-        window.location.href = "schedule.html";
-    } catch (error) {
-        console.error("소셜 로그인 실패:", error);
-        alert("Google 인증에 실패했습니다.");
-    }
-});
-
-// Firebase 예외 코드 한글 디코딩 가이드
-function getErrorMessage(code) {
-    switch (code) {
-        case 'auth/email-already-in-use': return '이미 가입된 이메일 주소입니다.';
-        case 'auth/weak-password': return '보안을 위해 비밀번호를 6자리 이상 설정하세요.';
-        case 'auth/invalid-email': return '이메일 주소 형태가 올바르지 않습니다.';
-        case 'auth/user-not-found':
-        case 'auth/wrong-password':
-        case 'auth/invalid-credential': return '가입정보가 없거나 비밀번호가 틀렸습니다.';
-        default: return '네트워크 통신 오류 혹은 알 수 없는 예외가 발생했습니다.';
-    }
+    });
 }
