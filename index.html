@@ -1,159 +1,127 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SOLAR FC - 메인 스케줄</title>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary-color: #007bff;
-            --bg-color: #f8f9fa;
-            --card-bg: #ffffff;
-            --text-color: #333;
-            --sidebar-width: 240px;
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyDn7oGNdD02WceJwIvz_zNitJx5bATD8jY",
+    authDomain: "solrafc.firebaseapp.com",
+    projectId: "solrafc",
+    storageBucket: "solrafc.firebasestorage.app",
+    messagingSenderId: "267444798176",
+    appId: "1:267444798176:web:c85dcf7385aa02e5790685"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+let currentMode = 'login';
+
+const loginTab = document.getElementById('tab-login');
+const signupTab = document.getElementById('tab-signup');
+const signupFields = document.querySelectorAll('.signup-only');
+const submitBtnText = document.getElementById('btn-submit-text');
+const subTitle = document.getElementById('sub-title');
+const authForm = document.getElementById('auth-form');
+const googleBtn = document.getElementById('btn-google-login');
+
+if (googleBtn) googleBtn.style.display = 'none'; 
+
+const emailInput = document.getElementById('user-email');
+if (emailInput) {
+    emailInput.placeholder = "사용할 아이디를 입력하세요";
+    emailInput.type = "text"; 
+}
+
+if (loginTab) loginTab.addEventListener('click', () => switchMode('login'));
+if (signupTab) signupTab.addEventListener('click', () => switchMode('signup'));
+
+function switchMode(mode) {
+    currentMode = mode;
+    if (mode === 'signup') {
+        if (loginTab) loginTab.classList.remove('active');
+        if (signupTab) signupTab.classList.add('active');
+        signupFields.forEach(field => field.style.display = 'block');
+        if (submitBtnText) submitBtnText.innerText = '회원가입 완료하기';
+        if (subTitle) subTitle.innerText = '새로운 크루 멤버 등록';
+        document.getElementById('user-name').required = true;
+        document.getElementById('user-phone').required = true;
+    } else {
+        if (signupTab) signupTab.classList.remove('active');
+        if (loginTab) loginTab.classList.add('active');
+        signupFields.forEach(field => field.style.display = 'none');
+        if (submitBtnText) submitBtnText.innerText = '로그인하기';
+        if (subTitle) subTitle.innerText = '클럽 회원 관리 시스템';
+        document.getElementById('user-name').required = false;
+        document.getElementById('user-phone').required = false;
+    }
+}
+
+if (authForm) {
+    authForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const userId = document.getElementById('user-email').value.trim();
+        const password = document.getElementById('user-password').value;
+        
+        if (currentMode === 'signup') {
+            const name = document.getElementById('user-name').value;
+            const phone = document.getElementById('user-phone').value;
+            
+            try {
+                const userDocRef = doc(db, "users", userId);
+                const userDocSnap = await getDoc(userDocRef);
+                
+                if (userDocSnap.exists()) {
+                    alert("❌ 이미 존재하는 아이디입니다. 다른 아이디를 사용해주세요.");
+                    return;
+                }
+                
+                await setDoc(userDocRef, {
+                    userId: userId,
+                    password: password, 
+                    name: name,
+                    phoneNumber: phone,
+                    role: 'member', 
+                    joinedDate: new Date().toISOString().split('T')[0]
+                });
+                
+                alert(`⚽ ${name}님, 가입을 축하합니다! 가입하신 아이디로 로그인해 주세요.`);
+                switchMode('login');
+                authForm.reset();
+                
+            } catch (error) {
+                console.error("회원가입 처리 중 에러:", error);
+                alert(`🚨 SOLAR FC 회원가입 실패 원인:\n[${error.code}]\n${error.message}`);
+            }
+        } else {
+            try {
+                const userDocRef = doc(db, "users", userId);
+                const userDocSnap = await getDoc(userDocRef);
+                
+                if (!userDocSnap.exists()) {
+                    alert("❌ 존재하지 않는 아이디입니다.");
+                    return;
+                }
+                
+                const userData = userDocSnap.data();
+                
+                if (userData.password === password) {
+                    alert(`🔓 로그인 성공! ${userData.name}님 환영합니다.`);
+                    
+                    sessionStorage.setItem("isLoggedIn", "true");
+                    sessionStorage.setItem("userId", userData.userId);
+                    sessionStorage.setItem("userName", userData.name);
+                    sessionStorage.setItem("userRole", userData.role);
+                    
+                    // 👈 로그인 성공 후 메인 홈 화면(index.html)으로 이동합니다.
+                    window.location.href = "index.html";
+                } else {
+                    alert("❌ 비밀번호가 올바르지 않습니다.");
+                }
+                
+            } catch (error) {
+                console.error("로그인 처리 중 에러:", error);
+                alert("로그인 도중 오류가 발생했습니다.");
+            }
         }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-
-        body {
-            font-family: 'Noto Sans KR', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            display: flex;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-
-        aside {
-            width: var(--sidebar-width);
-            background-color: #1e293b;
-            color: #fff;
-            display: flex;
-            flex-direction: column;
-            transition: transform 0.3s ease, margin-left 0.3s ease;
-            position: fixed;
-            top: 0; bottom: 0; left: 0;
-            z-index: 100;
-        }
-
-        aside.collapsed {
-            transform: translateX(calc(var(--sidebar-width) * -1));
-        }
-
-        aside .sidebar-header {
-            padding: 20px;
-            font-size: 20px;
-            font-weight: 700;
-            border-bottom: 1px solid #334155;
-            text-align: center;
-        }
-
-        aside ul { list-style: none; padding: 15px 0; }
-        aside ul li a {
-            display: block; padding: 15px 25px; color: #cbd5e1;
-            text-decoration: none; font-size: 16px; font-weight: 500; transition: all 0.2s;
-        }
-
-        aside ul li a:hover, aside ul li a.active {
-            background-color: #334155; color: #fff;
-            border-left: 4px solid var(--primary-color);
-        }
-
-        .wrapper {
-            flex: 1; display: flex; flex-direction: column;
-            margin-left: var(--sidebar-width); transition: margin-left 0.3s ease; min-width: 0;
-        }
-
-        .wrapper.expanded { margin-left: 0; }
-
-        header {
-            background-color: var(--card-bg); padding: 15px 20px;
-            display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #dee2e6;
-        }
-
-        .header-left { display: flex; align-items: center; gap: 15px; }
-
-        .btn-toggle-sidebar {
-            background: none; border: none; font-size: 24px; cursor: pointer; color: #333;
-            display: flex; align-items: center; justify-content: center; padding: 5px; border-radius: 4px; transition: background-color 0.2s;
-        }
-        .btn-toggle-sidebar:hover { background-color: #f1f5f9; }
-
-        .user-section { display: flex; align-items: center; gap: 10px; }
-
-        .btn-logout {
-            background: none; border: 1px solid #dc3545; color: #dc3545;
-            padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px;
-        }
-        .btn-logout:hover { background-color: #dc3545; color: white; }
-
-        main { max-width: 600px; width: 100%; margin: 20px auto; padding: 0 15px; }
-        .date-selector { margin-bottom: 20px; }
-        .date-selector input[type="date"] {
-            width: 100%; padding: 12px; font-size: 16px; border: 1px solid #ced4da; border-radius: 8px;
-        }
-
-        .schedule-card {
-            background: var(--card-bg); border-radius: 12px; padding: 20px;
-            margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            display: flex; justify-content: space-between; align-items: center;
-        }
-
-        .schedule-info h4 { margin: 0 0 8px 0; font-size: 18px; }
-        .schedule-info p { margin: 4px 0; color: #6c757d; font-size: 14px; }
-        .badge { background-color: #e2e8f0; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
-
-        .btn-reserve {
-            background-color: var(--primary-color); color: white; border: none;
-            padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold;
-        }
-        .btn-reserve:disabled { background-color: #ced4da; cursor: not-allowed; }
-
-        @media (max-width: 768px) {
-            aside { transform: translateX(calc(var(--sidebar-width) * -1)); }
-            aside.active { transform: translateX(0); }
-            .wrapper { margin-left: 0; }
-        }
-    </style>
-</head>
-<body>
-
-    <aside id="sidebar">
-        <div class="sidebar-header">☀️ SOLAR FC</div>
-        <ul>
-            <li><a href="#" id="menu-home">🏠 홈</a></li>
-            <li><a href="#" id="menu-schedule" class="active">📅 일정관리</a></li>
-            <li><a href="#" id="menu-members">👥 회원관리</a></li>
-        </ul>
-    </aside>
-
-    <div class="wrapper" id="content-wrapper">
-        <header>
-            <div class="header-left">
-                <button class="btn-toggle-sidebar" id="btn-toggle">☰</button>
-                <h2>SOLAR FC 스케줄</h2>
-            </div>
-            <div class="user-section">
-                <span id="user-info">조회 중...</span>
-                <button class="btn-logout" id="btn-logout">로그아웃</button>
-            </div>
-        </header>
-
-        <main>
-            <section class="date-selector">
-                <input type="date" id="target-date" value="2026-06-30">
-            </section>
-
-            <section class="schedule-container">
-                <h3>선택한 날짜의 세션</h3>
-                <div id="schedule-list">
-                    <p>일정을 불러오는 중입니다...</p>
-                </div>
-            </section>
-        </main>
-    </div>
-
-    <script type="module" src="main.js"></script>
-</body>
-</html>
+    });
+}
