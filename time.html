@@ -26,7 +26,7 @@
             overflow-x: hidden;
         }
 
-        /* ── 사이드바 스타일 ── */
+        /* ── 사이드바 기본 레이아웃 ── */
         aside {
             width: var(--sidebar-width);
             background-color: #1e293b;
@@ -36,9 +36,10 @@
             transition: transform 0.3s ease;
             position: fixed;
             top: 0; bottom: 0; left: 0;
-            z-index: 1000;
+            z-index: 2000; /* 모바일 팝업 시 최상단 고정 보장 */
         }
 
+        /* PC용 접기 상태 */
         aside.collapsed {
             transform: translateX(calc(var(--sidebar-width) * -1));
         }
@@ -62,7 +63,7 @@
             border-left: 4px solid var(--primary-color);
         }
 
-        /* ── 메인 콘텐츠 랩퍼 ── */
+        /* ── 메인 본문 콘텐츠 영역 ── */
         .wrapper {
             flex: 1;
             display: flex;
@@ -99,12 +100,13 @@
         }
         .btn-toggle-sidebar:hover { background-color: #f1f5f9; }
 
+        /* ✨ [해결 포인트 ①] 모든 스마트폰에서 무조건 한 줄로 고정되는 마법의 헤더 CSS */
         header h2 {
-            font-size: clamp(15px, 4.5vw, 20px);
+            font-size: clamp(14px, 4.2vw, 20px); /* 화면 폭(vw)에 맞춰 폰트 자동 스케일 다운 */
             font-weight: 700;
-            white-space: nowrap;
+            white-space: nowrap; /* 💥 강제 자동 줄바꿈 원천 차단 */
             overflow: hidden;
-            text-overflow: ellipsis;
+            text-overflow: ellipsis; /* 극단적으로 좁은 해상도 대응용 말줄임 방어선 */
             min-width: 0;
         }
 
@@ -116,7 +118,7 @@
         }
         
         #user-info {
-            font-size: clamp(12px, 3.2vw, 14px);
+            font-size: clamp(11px, 3vw, 14px);
             white-space: nowrap;
         }
 
@@ -134,7 +136,7 @@
             padding: 15px;
         }
 
-        /* ── 주간 달력 ── */
+        /* ── 주간 달력 구성 ── */
         .week-container {
             background-color: var(--card-bg);
             border-radius: 12px;
@@ -191,7 +193,7 @@
         .day-tab.active .day-num { background-color: var(--primary-color); color: white; }
         .day-tab.active .day-name { color: var(--primary-color); font-weight: 700; }
 
-        /* ── 타임라인 세션 리스트 ── */
+        /* ── 타임라인 매치 스타일 ── */
         .schedule-timeline { display: flex; flex-direction: column; gap: 15px; }
         
         .timeline-card {
@@ -218,10 +220,19 @@
         }
         .btn-reserve:disabled { background-color: #cbd5e1; cursor: not-allowed; color: #94a3b8; }
 
+        /* 📱 ── 모바일 환경 완벽 대응 브레이크포인트 미디어 쿼리 ── */
         @media (max-width: 768px) {
-            aside { transform: translateX(-100%); }
-            aside.mobile-active { transform: translateX(0); }
-            .wrapper { margin-left: 0 !important; }
+            aside {
+                /* 모바일 진입 시 화면 가리는 현상 완전 차단 (좌측 밖 배치) */
+                transform: translateX(-100%);
+            }
+            /* 모바일에서 ☰ 버튼 터치 시 사이드바 서랍 오픈 상태 */
+            aside.mobile-active {
+                transform: translateX(0);
+            }
+            .wrapper {
+                margin-left: 0 !important; /* 모바일 본문 가리는 왼쪽 강제 마진 제거 */
+            }
             .timeline-card { padding: 12px; }
             .time-box { min-width: 70px; font-size: 13px; }
         }
@@ -275,8 +286,10 @@
             const toggleBtn = document.getElementById('btn-toggle');
 
             if (toggleBtn && sidebar && contentWrapper) {
+                // ☰ 토글 버튼 터치 이벤트
                 toggleBtn.addEventListener('click', (e) => {
-                    e.stopPropagation(); 
+                    e.stopPropagation(); // 💥 클릭 신호가 body로 퍼져 즉시 다시 닫히는 현상 원천 차단!
+                    
                     if (window.innerWidth <= 768) {
                         sidebar.classList.toggle('mobile-active');
                     } else {
@@ -286,10 +299,16 @@
                 });
             }
 
-            sidebar.addEventListener('click', (e) => { e.stopPropagation(); });
+            // 사이드바 자체 내부 메뉴를 클릭할 때는 팝업이 닫히지 않도록 이벤트 격리 방어
+            if (sidebar) {
+                sidebar.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                });
+            }
 
+            // 💥 바깥쪽 본문 영역 아무데나 터치하면 모바일 서랍장이 쏙 닫히게 구성
             document.addEventListener('click', () => {
-                if (window.innerWidth <= 768) {
+                if (window.innerWidth <= 768 && sidebar) {
                     sidebar.classList.remove('mobile-active');
                 }
             });

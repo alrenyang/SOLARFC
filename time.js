@@ -10,6 +10,7 @@ const firebaseConfig = {
     appId: "1:267444798176:web:c85dcf7385aa02e5790685"
 };
 
+// 1. 세션 보안 검증
 const isLoggedIn = sessionStorage.getItem("isLoggedIn");
 const userId = sessionStorage.getItem("userId");
 const userName = sessionStorage.getItem("userName") || "크루멤버";
@@ -33,47 +34,77 @@ if (userInfoElem) {
     userInfoElem.innerText = `🏃‍♂️ ${userName}님`;
 }
 
-const sidebar = document.getElementById('sidebar');
-const contentWrapper = document.getElementById('content-wrapper');
-const toggleBtn = document.getElementById('btn-toggle');
-
-if (toggleBtn && sidebar && contentWrapper) {
-    toggleBtn.addEventListener('click', () => {
-        if (window.innerWidth <= 768) {
-            sidebar.classList.toggle('active');
-        } else {
-            sidebar.classList.toggle('collapsed');
-            contentWrapper.classList.toggle('expanded');
-        }
-    });
-}
-
+// 2. [사이드바 메뉴 클릭 제어] - 주소 이동 허용 및 준비 중 메뉴 필터링
 const menuIds = ['menu-home', 'menu-schedule', 'menu-members'];
 menuIds.forEach(id => {
     const menuElem = document.getElementById(id);
     if (menuElem) {
         menuElem.addEventListener('click', (e) => {
-            e.preventDefault();
-            menuIds.forEach(mId => document.getElementById(mId)?.classList.remove('active'));
-            menuElem.classList.add('active');
-            
-            // ☀️ SOLAR FC 알림 문구 매핑
-            if(id === 'menu-home') alert("SOLAR FC 홈 화면 준비 중입니다.");
-            if(id === 'menu-members') alert("SOLAR FC 회원관리 데이터 준비 중입니다.");
+            if (menuElem.getAttribute('href') === '#' || menuElem.getAttribute('href') === '') {
+                e.preventDefault();
+                alert("SOLAR FC 회원 정보 관리 기능은 현재 준비 중입니다.");
+            }
         });
     }
 });
 
+// 3. 📅 [모바일 최적화] 주간 달력 생성 로직 (2026년 기준 매핑 가능)
+let selectedDate = new Date().toISOString().split('T')[0]; // 오늘 날짜 기본 세팅
+
+function initWeeklyCalendar() {
+    const weekDaysContainer = document.getElementById('week-days-container');
+    const monthYearTitle = document.getElementById('current-month-year');
+    if (!weekDaysContainer) return;
+
+    const today = new Date();
+    const currentDayOfWeek = today.getDay(); 
+    
+    const startOfWeek = new Date(today);
+    const distanceToMonday = currentDayOfWeek === 0 ? -6 : 1 - currentDayOfWeek;
+    startOfWeek.setDate(today.getDate() + distanceToMonday);
+
+    const dayNames = ['월', '화', '수', '목', '금', '토', '일'];
+    weekDaysContainer.innerHTML = '';
+
+    for (let i = 0; i < 7; i++) {
+        const loopDate = new Date(startOfWeek);
+        loopDate.setDate(startOfWeek.getDate() + i);
+
+        const dateString = loopDate.toISOString().split('T')[0]; 
+        const dayNum = loopDate.getDate();
+
+        const button = document.createElement('button');
+        button.className = `day-tab ${dateString === selectedDate ? 'active' : ''}`;
+        button.dataset.date = dateString;
+
+        button.innerHTML = `
+            <span class="day-name">${dayNames[i]}</span>
+            <span class="day-num">${dayNum}</span>
+        `;
+
+        button.addEventListener('click', () => {
+            document.querySelectorAll('.day-tab').forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            selectedDate = dateString;
+            loadSchedules(selectedDate);
+        });
+
+        weekDaysContainer.appendChild(button);
+    }
+
+    monthYearTitle.innerText = `${today.getFullYear()}년 ${today.getMonth() + 1}월`;
+}
+
+// Firebase 데이터베이스 초기화
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-
-const dateInput = document.getElementById('target-date');
 const scheduleList = document.getElementById('schedule-list');
 
+// 4. 실시간 Firestore 일정 바인딩 (onSnapshot)
 function loadSchedules(dateString) {
     if (!scheduleList) return;
     
-    scheduleList.innerHTML = '<p class="loading">일정을 불러오는 중...</p>';
+    scheduleList.innerHTML = '<p class="loading">일정을 불러오는 중입니다...</p>';
 
     const q = query(collection(db, "schedules"), where("date", "==", dateString));
     
@@ -81,67 +112,67 @@ function loadSchedules(dateString) {
         scheduleList.innerHTML = '';
         
         if (querySnapshot.empty) {
-            scheduleList.innerHTML = '<p class="no-data">📅 해당 날짜에 예정된 훈련이나 경기가 없습니다.</p>';
+            scheduleList.innerHTML = '<p class="no-data">📅 해당 날짜에 예정된 SOLAR FC 훈련이나 경기가 없습니다.</p>';
             return;
         }
 
-        querySnapshot.forEach((docSnap) => {
-            const schedule = docSnap.data();
-            const scheduleId = docSnap.id;
-            
+        const sortedDocs = [];
+        querySnapshot.forEach(doc => sortedDocs.push({id: doc.id, ...doc.data()}));
+        sortedDocs.sort((a, b) => a.time.localeCompare(b.time));
+
+        sortedDocs.forEach((schedule) => {
             const card = document.createElement('div');
-            card.className = 'schedule-card';
+            card.className = 'timeline-card';
             
             const isFull = schedule.currentParticipants >= schedule.maxParticipants;
 
             card.innerHTML = `
-                <div class="schedule-info">
-                    <span class="badge">${schedule.time}</span>
+                <div class="time-box">⌚ ${schedule.time}</div>
+                <div class="session-main">
                     <h4>${schedule.title}</h4>
                     <p>📍 장소: ${schedule.location}</p>
-                    <p>👥 인원: ${schedule.currentParticipants} / ${schedule.maxParticipants}명</p>
+                    <span class="status-badge ${isFull ? '' : 'available'}">
+                        ${isFull ? '정원 마감' : `신청 가능 (${schedule.currentParticipants}/${schedule.maxParticipants}명)`}
+                    </span>
                 </div>
-                <button class="btn-reserve" id="btn-${scheduleId}" ${isFull ? 'disabled' : ''}>
-                    ${isFull ? '마감' : '예약하기'}
+                <button class="btn-reserve" id="btn-${schedule.id}" ${isFull ? 'disabled' : ''}>
+                    ${isFull ? '마감' : '예약'}
                 </button>
             `;
             
             scheduleList.appendChild(card);
 
-            document.getElementById(`btn-${scheduleId}`).addEventListener('click', () => {
-                bookSchedule(scheduleId);
+            document.getElementById(`btn-${schedule.id}`).addEventListener('click', () => {
+                bookSchedule(schedule.id);
             });
         });
     }, (error) => {
         console.error("Firestore 에러:", error);
         alert("🚨 파이어베이스 연동 실패 원인: " + error.message);
-        scheduleList.innerHTML = `<p class="no-data">❌ 일정을 불러오는 중 오류가 발생했습니다.<br>(${error.code})</p>`;
     });
 }
 
+// 선착순 동시성 트랜잭션 예약 함수
 async function bookSchedule(scheduleId) {
     const scheduleRef = doc(db, "schedules", scheduleId);
-    
     try {
         await runTransaction(db, async (transaction) => {
             const sfDoc = await transaction.get(scheduleRef);
             if (!sfDoc.exists()) throw "일정이 존재하지 않습니다.";
 
             const newPopulation = sfDoc.data().currentParticipants + 1;
-            
             if (newPopulation <= sfDoc.data().maxParticipants) {
                 transaction.update(scheduleRef, { currentParticipants: newPopulation });
             } else {
                 return Promise.reject("정원이 마감되었습니다!");
             }
         });
-        alert("⚽ 예약이 성공적으로 완료되었습니다!");
+        alert("⚽ 매치 예약이 완료되었습니다!");
     } catch (e) {
         alert("예약 실패: " + e);
     }
 }
 
-if (dateInput) {
-    dateInput.addEventListener('change', (e) => loadSchedules(e.target.value));
-    loadSchedules(dateInput.value);
-}
+// 초기 로딩 프로세서 가동
+initWeeklyCalendar();
+loadSchedules(selectedDate);
