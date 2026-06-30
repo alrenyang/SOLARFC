@@ -82,15 +82,29 @@
         }
         .btn-logout:hover { background-color: #dc3545; color: white; }
 
-        main { width: 100%; max-width: 800px; margin: 0 auto; padding: 15px; }
+        /* 본문 영역은 가로 가득 차게 설정하고 내부에서 세부 정렬 */
+        main {
+            width: 100%;
+            margin: 0 auto;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
 
-        /* ── 주간 타이틀 및 캘린더 아이콘 영역 ── */
+        /* ── 📅 [핵심 수정] 주간 달력 감싸는 박스를 가로폭 100% 꽉 채우기 ── */
         .week-container {
-            background-color: var(--card-bg); border-radius: 12px; padding: 12px 8px; margin-bottom: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border: 1px solid var(--border-color);
+            width: 100%; /* 웹과 모바일 모두 가로 폭을 가득 채웁니다 */
+            background-color: var(--card-bg); 
+            border-radius: 12px; 
+            padding: 16px; 
+            margin-bottom: 25px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04); 
+            border: 1px solid var(--border-color);
         }
 
         .week-header {
-            padding: 0 5px 12px 5px; display: flex; align-items: center; gap: 8px;
+            padding: 0 5px 14px 5px; display: flex; align-items: center; gap: 8px;
         }
 
         #current-week-range {
@@ -102,22 +116,44 @@
         }
         .btn-open-calendar:hover { transform: scale(1.1); }
 
-        .week-days { display: flex; justify-content: space-between; gap: 4px; }
-
-        .day-tab {
-            flex: 1; display: flex; flex-direction: column; align-items: center; padding: 8px 2px; cursor: pointer; border-radius: 8px; background: none; border: none; min-width: 0;
+        /* ✨ 주간 7일 배열을 가로 방향으로 꽉 차게 펴주는 플렉스 설정 */
+        .week-days { 
+            display: flex; 
+            justify-content: space-between; 
+            width: 100%;
+            gap: 10px; 
         }
 
-        .day-tab .day-name { font-size: 11px; color: #6c757d; margin-bottom: 4px; }
+        /* ✨ 각 요일 버튼들이 공간을 정확하게 7등분하여 빈틈없이 채우도록 지정 */
+        .day-tab {
+            flex: 1; /* 남는 빈 공간을 모든 버튼이 똑같은 비율로 나누어 가집니다 */
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            padding: 12px 4px; 
+            cursor: pointer; 
+            border-radius: 10px; 
+            background: none; 
+            border: none; 
+            min-width: 0;
+            transition: background-color 0.15s;
+        }
+
+        .day-tab .day-name { font-size: 12px; color: #6c757d; margin-bottom: 6px; }
         .day-tab .day-num {
-            font-size: 14px; font-weight: 700; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 50%;
+            font-size: 15px; font-weight: 700; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; border-radius: 50%;
         }
 
         .day-tab:hover { background-color: #f1f5f9; }
+        .day-tab.active { background-color: #f0f7ff; } /* 선택 영역 둥근 배경 스타일 가공 */
         .day-tab.active .day-num { background-color: var(--primary-color); color: white; }
         .day-tab.active .day-name { color: var(--primary-color); font-weight: 700; }
 
-        /* ── 타임라인 매치 스타일 ── */
+        /* ── 하단 타임라인 카드는 적당한 가독성 크기로 유지 ── */
+        .schedule-container {
+            width: 100%;
+            max-width: 800px; /* 시간표 정보는 너무 퍼지면 읽기 불편하므로 최대 크기 방어선을 둡니다 */
+        }
         .schedule-timeline { display: flex; flex-direction: column; gap: 15px; }
         .timeline-card {
             background-color: var(--card-bg); border-radius: 12px; border: 1px solid var(--border-color); padding: 15px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.02); gap: 10px;
@@ -138,7 +174,7 @@
         }
         .btn-reserve:disabled { background-color: #cbd5e1; cursor: not-allowed; color: #94a3b8; }
 
-        /* ── 주간 선택 캘린더 모달 팝업 CSS ── */
+        /* ── 주간 선택 캘린더 모달 팝업 ── */
         .modal-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0,0,0,0.4); display: none; justify-content: center; align-items: center; z-index: 3000; padding: 15px;
         }
@@ -180,6 +216,9 @@
             aside { transform: translateX(-100%); }
             aside.mobile-active { transform: translateX(0); }
             .wrapper { margin-left: 0 !important; }
+            .week-days { gap: 4px; } /* 모바일에서는 요일 탭 간격을 컴팩트하게 축소 */
+            .day-tab { padding: 8px 2px; }
+            .day-tab .day-num { width: 30px; height: 30px; font-size: 14px; }
             .timeline-card { padding: 12px; }
             .time-box { min-width: 70px; font-size: 13px; }
         }
