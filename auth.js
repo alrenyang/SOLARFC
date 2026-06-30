@@ -102,7 +102,8 @@ if (authForm) {
                 
             } catch (error) {
                 console.error("회원가입 처리 중 에러:", error);
-                alert("회원가입에 실패했습니다. 콘솔 로그를 확인하세요.");
+                // 🚨 에러 메시지와 에러 코드를 알림창으로 명확하게 보여줍니다.
+                alert(`🚨 SOLAR FC 회원가입 실패 원인:\n[${error.code}]\n${error.message}`);
             }
         } else {
             // 로그인 로직 진행
