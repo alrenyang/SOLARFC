@@ -26,7 +26,7 @@
             overflow-x: hidden;
         }
 
-        /* ── 사이드바 디자인 (다크 모던 톤) ── */
+        /* ── 사이드바 디자인 ── */
         aside {
             width: var(--sidebar-width);
             background-color: #1e293b;
@@ -39,7 +39,7 @@
             z-index: 1000;
         }
 
-        /* PC 화면에서 사이드바 접히는 애니메이션 클래스 */
+        /* PC에서 사이드바 접기 상태 */
         aside.collapsed {
             transform: translateX(calc(var(--sidebar-width) * -1));
         }
@@ -63,7 +63,7 @@
             border-left: 4px solid var(--primary-color);
         }
 
-        /* ── 메인 콘텐츠 래퍼 레이아웃 ── */
+        /* ── 메인 콘텐츠 래퍼 ── */
         .wrapper {
             flex: 1;
             display: flex;
@@ -99,7 +99,7 @@
         }
         .btn-logout:hover { background-color: #dc3545; color: white; }
 
-        /* ── 본문 카드 대시보드 레이아웃 ── */
+        /* ── 본문 레이아웃 ── */
         main {
             width: 100%;
             max-width: 800px;
@@ -145,26 +145,24 @@
         }
         .shortcut-card .icon { font-size: 28px; display: block; margin-bottom: 8px; }
 
-        /* 📱 ── 스마트폰 소형 화면 반응형 브레이크포인트 최적화 ── */
+        /* 📱 스마트폰 반응형 브레이크포인트 최적화 */
         @media (max-width: 768px) {
             aside {
-                /* 모바일에서는 사이드바가 좌측 화면 밖으로 기본 완전 차단 */
-                transform: translateX(calc(var(--sidebar-width) * -1));
+                /* 모바일에서는 사이드바가 기본적으로 왼쪽 화면 밖으로 완벽하게 숨김 */
+                transform: translateX(-100%);
             }
-            /* 활성화 되었을 때 서랍장처럼 열림 */
+            /* 모바일에서 사이드바가 열렸을 때 상태 */
             aside.mobile-active {
                 transform: translateX(0);
             }
             .wrapper {
-                /* 모바일에서는 사이드바 여백을 없애 전면 확장 */
-                margin-left: 0;
+                margin-left: 0 !important; /* 모바일에서는 여백 제거 강제 */
             }
             .menu-shortcut-grid {
-                /* 모바일에서 타일형 메뉴가 깨지지 않게 세로로 1열 정렬 */
                 grid-template-columns: 1fr;
             }
             header h2 {
-                font-size: 18px; /* 헤더 폰트 축소 */
+                font-size: 18px;
             }
         }
     </style>
@@ -230,14 +228,16 @@
             window.location.href = "login.html";
         });
 
-        // 📱 모바일 터치 및 PC 반응형 토글 이벤트 바인딩
+        // 📱 사이드바 제어 로직 보완
         const sidebar = document.getElementById('sidebar');
         const contentWrapper = document.getElementById('content-wrapper');
         const toggleBtn = document.getElementById('btn-toggle');
 
         if (toggleBtn && sidebar && contentWrapper) {
+            // ☰ 버튼 클릭 이벤트
             toggleBtn.addEventListener('click', (e) => {
-                e.stopPropagation(); // 이벤트 버블링 방어
+                e.stopPropagation(); // 💥 클릭 전파 차단 (매우 중요!)
+                
                 if (window.innerWidth <= 768) {
                     sidebar.classList.toggle('mobile-active');
                 } else {
@@ -247,8 +247,13 @@
             });
         }
 
-        // 모바일 환경에서 사이드바 외부의 본문 영역 터치 시 메뉴가 자동으로 다시 닫히는 센스있는 UX 처리
-        document.body.addEventListener('click', () => {
+        // 💥 사이드바 자체를 터치할 때는 닫히지 않도록 이벤트 전파 차단
+        sidebar.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+
+        // ✨ [바깥 클릭 자동 닫힘] 본문 영역이나 body 어디든 터치하면 사이드바 닫기
+        document.addEventListener('click', () => {
             if (window.innerWidth <= 768) {
                 sidebar.classList.remove('mobile-active');
             }
