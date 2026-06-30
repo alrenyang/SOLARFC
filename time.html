@@ -26,19 +26,20 @@
             overflow-x: hidden;
         }
 
-        /* ── 사이드바 스타일 ── */
+        /* ── 사이드바 스타일 (모바일 철저 방어) ── */
         aside {
             width: var(--sidebar-width);
             background-color: #1e293b;
             color: #fff;
             display: flex;
             flex-direction: column;
-            transition: transform 0.3s ease, margin-left 0.3s ease;
+            transition: transform 0.3s ease;
             position: fixed;
             top: 0; bottom: 0; left: 0;
-            z-index: 100;
+            z-index: 1000; /* 모바일에서 최상단으로 띄움 */
         }
 
+        /* PC에서 접기용 클래스 */
         aside.collapsed {
             transform: translateX(calc(var(--sidebar-width) * -1));
         }
@@ -105,21 +106,18 @@
             padding: 20px;
         }
 
-        /* ── 주간 달력 ── */
+        /* ── 주간 달력 (모바일 자릿수 터짐 방지) ── */
         .week-container {
             background-color: var(--card-bg);
             border-radius: 12px;
-            padding: 15px;
+            padding: 12px 8px;
             margin-bottom: 25px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.04);
             border: 1px solid var(--border-color);
         }
 
         .week-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
+            padding: 0 5px 10px 5px;
             font-weight: 700;
             font-size: 16px;
         }
@@ -127,7 +125,7 @@
         .week-days {
             display: flex;
             justify-content: space-between;
-            gap: 8px;
+            gap: 4px; /* 모바일 대응 간격 축소 */
         }
 
         .day-tab {
@@ -135,25 +133,26 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 10px 5px;
+            padding: 8px 2px;
             cursor: pointer;
             border-radius: 8px;
             transition: all 0.2s;
             background: none;
             border: none;
+            min-width: 0; /* 모바일에서 찌그러짐 방지 */
         }
 
         .day-tab .day-name {
-            font-size: 12px;
+            font-size: 11px;
             color: #6c757d;
             margin-bottom: 4px;
         }
 
         .day-tab .day-num {
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 700;
-            width: 32px;
-            height: 32px;
+            width: 28px;
+            height: 28px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -166,34 +165,54 @@
 
         /* ── 타임라인 세션 리스트 ── */
         .schedule-timeline { display: flex; flex-direction: column; gap: 15px; }
+        
         .timeline-card {
             background-color: var(--card-bg); border-radius: 12px; border: 1px solid var(--border-color);
-            padding: 20px; display: flex; justify-content: space-between; align-items: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.02); transition: transform 0.2s;
+            padding: 15px; display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.02); gap: 10px;
         }
-        .timeline-card:hover { transform: translateY(-2px); }
 
-        .time-box { font-size: 16px; font-weight: 700; color: #495057; min-width: 100px; }
-        .session-main { flex: 1; padding-left: 15px; border-left: 3px solid #dee2e6; }
-        .session-main h4 { font-size: 16px; margin-bottom: 6px; color: #111; }
-        .session-main p { font-size: 13px; color: #6c757d; margin-bottom: 4px; }
+        .time-box { font-size: 14px; font-weight: 700; color: #495057; min-width: 85px; text-align: center;}
+        .session-main { flex: 1; padding-left: 12px; border-left: 3px solid #dee2e6; min-width: 0; }
+        .session-main h4 { font-size: 15px; margin-bottom: 4px; color: #111; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .session-main p { font-size: 12px; color: #6c757d; margin-bottom: 4px; }
         
         .status-badge {
-            display: inline-block; font-size: 12px; font-weight: 700; padding: 4px 8px;
+            display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 6px;
             border-radius: 4px; background-color: #e2e8f0; color: #475569;
         }
         .status-badge.available { background-color: #e0f2fe; color: #0369a1; }
 
         .btn-reserve {
             background-color: var(--primary-color); color: white; border: none;
-            padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px;
+            padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 13px;
+            white-space: nowrap;
         }
         .btn-reserve:disabled { background-color: #cbd5e1; cursor: not-allowed; color: #94a3b8; }
 
+        /* 📱 ── 스마트폰 반응형 브레이크포인트 완벽 매칭 ── */
         @media (max-width: 768px) {
-            aside { transform: translateX(calc(var(--sidebar-width) * -1)); }
-            aside.active { transform: translateX(0); }
-            .wrapper { margin-left: 0; }
+            aside {
+                /* 모바일에서 기본적으로 사이드바 완전히 숨김 */
+                transform: translateX(-100%);
+            }
+            /* 열림 모드 클래스 */
+            aside.mobile-active {
+                transform: translateX(0);
+            }
+            .wrapper {
+                margin-left: 0 !important; /* 모바일에서 강제 여백 제거 */
+            }
+            header h2 {
+                font-size: 18px;
+            }
+            .timeline-card {
+                padding: 12px;
+            }
+            .time-box {
+                min-width: 70px;
+                font-size: 13px;
+            }
         }
     </style>
 </head>
@@ -237,5 +256,38 @@
     </div>
 
     <script type="module" src="time.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const sidebar = document.getElementById('sidebar');
+            const contentWrapper = document.getElementById('content-wrapper');
+            const toggleBtn = document.getElementById('btn-toggle');
+
+            if (toggleBtn && sidebar && contentWrapper) {
+                // ☰ 토글 버튼을 터치했을 때
+                toggleBtn.addEventListener('click', (e) => {
+                    e.stopPropagation(); // 바깥 클릭 닫힘 센서로 퍼지는 버블링 원천 차단
+                    if (window.innerWidth <= 768) {
+                        sidebar.classList.toggle('mobile-active');
+                    } else {
+                        sidebar.classList.toggle('collapsed');
+                        contentWrapper.classList.toggle('expanded');
+                    }
+                });
+            }
+
+            // 사이드바 내부를 터치할 때는 닫히지 않도록 이벤트 방어
+            sidebar.addEventListener('click', (e) => {
+                e.stopPropagation();
+            });
+
+            // ✨ [핵심 해결] 사이드바 외부 어디든 터치하면 사이드바 닫히게 처리
+            document.addEventListener('click', () => {
+                if (window.innerWidth <= 768) {
+                    sidebar.classList.remove('mobile-active');
+                }
+            });
+        });
+    </script>
 </body>
 </html>
