@@ -1,127 +1,258 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOLAR FC - 홈</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-color: #212529;
+            --sidebar-width: 240px;
+            --border-color: #e9ecef;
+        }
 
-const firebaseConfig = {
-    apiKey: "AIzaSyDn7oGNdD02WceJwIvz_zNitJx5bATD8jY",
-    authDomain: "solrafc.firebaseapp.com",
-    projectId: "solrafc",
-    storageBucket: "solrafc.firebasestorage.app",
-    messagingSenderId: "267444798176",
-    appId: "1:267444798176:web:c85dcf7385aa02e5790685"
-};
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
 
-let currentMode = 'login';
+        /* ── 사이드바 디자인 (다크 모던 톤) ── */
+        aside {
+            width: var(--sidebar-width);
+            background-color: #1e293b;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s ease;
+            position: fixed;
+            top: 0; bottom: 0; left: 0;
+            z-index: 1000;
+        }
 
-const loginTab = document.getElementById('tab-login');
-const signupTab = document.getElementById('tab-signup');
-const signupFields = document.querySelectorAll('.signup-only');
-const submitBtnText = document.getElementById('btn-submit-text');
-const subTitle = document.getElementById('sub-title');
-const authForm = document.getElementById('auth-form');
-const googleBtn = document.getElementById('btn-google-login');
+        /* PC 화면에서 사이드바 접히는 애니메이션 클래스 */
+        aside.collapsed {
+            transform: translateX(calc(var(--sidebar-width) * -1));
+        }
 
-if (googleBtn) googleBtn.style.display = 'none'; 
+        aside .sidebar-header {
+            padding: 20px;
+            font-size: 20px;
+            font-weight: 700;
+            border-bottom: 1px solid #334155;
+            text-align: center;
+        }
 
-const emailInput = document.getElementById('user-email');
-if (emailInput) {
-    emailInput.placeholder = "사용할 아이디를 입력하세요";
-    emailInput.type = "text"; 
-}
+        aside ul { list-style: none; padding: 15px 0; }
+        aside ul li a {
+            display: block; padding: 15px 25px; color: #cbd5e1;
+            text-decoration: none; font-size: 16px; font-weight: 500; transition: all 0.2s;
+        }
 
-if (loginTab) loginTab.addEventListener('click', () => switchMode('login'));
-if (signupTab) signupTab.addEventListener('click', () => switchMode('signup'));
+        aside ul li a:hover, aside ul li a.active {
+            background-color: #334155; color: #fff;
+            border-left: 4px solid var(--primary-color);
+        }
 
-function switchMode(mode) {
-    currentMode = mode;
-    if (mode === 'signup') {
-        if (loginTab) loginTab.classList.remove('active');
-        if (signupTab) signupTab.classList.add('active');
-        signupFields.forEach(field => field.style.display = 'block');
-        if (submitBtnText) submitBtnText.innerText = '회원가입 완료하기';
-        if (subTitle) subTitle.innerText = '새로운 크루 멤버 등록';
-        document.getElementById('user-name').required = true;
-        document.getElementById('user-phone').required = true;
-    } else {
-        if (signupTab) signupTab.classList.remove('active');
-        if (loginTab) loginTab.classList.add('active');
-        signupFields.forEach(field => field.style.display = 'none');
-        if (submitBtnText) submitBtnText.innerText = '로그인하기';
-        if (subTitle) subTitle.innerText = '클럽 회원 관리 시스템';
-        document.getElementById('user-name').required = false;
-        document.getElementById('user-phone').required = false;
-    }
-}
+        /* ── 메인 콘텐츠 래퍼 레이아웃 ── */
+        .wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            margin-left: var(--sidebar-width);
+            transition: margin-left 0.3s ease;
+            min-width: 0;
+        }
 
-if (authForm) {
-    authForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const userId = document.getElementById('user-email').value.trim();
-        const password = document.getElementById('user-password').value;
-        
-        if (currentMode === 'signup') {
-            const name = document.getElementById('user-name').value;
-            const phone = document.getElementById('user-phone').value;
-            
-            try {
-                const userDocRef = doc(db, "users", userId);
-                const userDocSnap = await getDoc(userDocRef);
-                
-                if (userDocSnap.exists()) {
-                    alert("❌ 이미 존재하는 아이디입니다. 다른 아이디를 사용해주세요.");
-                    return;
-                }
-                
-                await setDoc(userDocRef, {
-                    userId: userId,
-                    password: password, 
-                    name: name,
-                    phoneNumber: phone,
-                    role: 'member', 
-                    joinedDate: new Date().toISOString().split('T')[0]
-                });
-                
-                alert(`⚽ ${name}님, 가입을 축하합니다! 가입하신 아이디로 로그인해 주세요.`);
-                switchMode('login');
-                authForm.reset();
-                
-            } catch (error) {
-                console.error("회원가입 처리 중 에러:", error);
-                alert(`🚨 SOLAR FC 회원가입 실패 원인:\n[${error.code}]\n${error.message}`);
+        .wrapper.expanded { margin-left: 0; }
+
+        header {
+            background-color: var(--card-bg);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .header-left { display: flex; align-items: center; gap: 15px; }
+
+        .btn-toggle-sidebar {
+            background: none; border: none; font-size: 24px; cursor: pointer; color: #333;
+            display: flex; align-items: center; justify-content: center; padding: 5px; border-radius: 4px;
+        }
+        .btn-toggle-sidebar:hover { background-color: #f1f5f9; }
+
+        .user-section { display: flex; align-items: center; gap: 10px; }
+        .btn-logout {
+            background: none; border: 1px solid #dc3545; color: #dc3545;
+            padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px;
+        }
+        .btn-logout:hover { background-color: #dc3545; color: white; }
+
+        /* ── 본문 카드 대시보드 레이아웃 ── */
+        main {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .welcome-card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            padding: 25px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .welcome-card h3 { font-size: 22px; margin-bottom: 10px; color: #111; }
+        .welcome-card p { color: #6c757d; font-size: 15px; line-height: 1.6; }
+
+        .menu-shortcut-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .shortcut-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            text-decoration: none;
+            color: var(--text-color);
+            font-weight: 700;
+            transition: all 0.2s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.01);
+        }
+        .shortcut-card:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+            color: var(--primary-color);
+        }
+        .shortcut-card .icon { font-size: 28px; display: block; margin-bottom: 8px; }
+
+        /* 📱 ── 스마트폰 소형 화면 반응형 브레이크포인트 최적화 ── */
+        @media (max-width: 768px) {
+            aside {
+                /* 모바일에서는 사이드바가 좌측 화면 밖으로 기본 완전 차단 */
+                transform: translateX(calc(var(--sidebar-width) * -1));
             }
-        } else {
-            try {
-                const userDocRef = doc(db, "users", userId);
-                const userDocSnap = await getDoc(userDocRef);
-                
-                if (!userDocSnap.exists()) {
-                    alert("❌ 존재하지 않는 아이디입니다.");
-                    return;
-                }
-                
-                const userData = userDocSnap.data();
-                
-                if (userData.password === password) {
-                    alert(`🔓 로그인 성공! ${userData.name}님 환영합니다.`);
-                    
-                    sessionStorage.setItem("isLoggedIn", "true");
-                    sessionStorage.setItem("userId", userData.userId);
-                    sessionStorage.setItem("userName", userData.name);
-                    sessionStorage.setItem("userRole", userData.role);
-                    
-                    // 👈 로그인 성공 후 메인 홈 화면(index.html)으로 이동합니다.
-                    window.location.href = "index.html";
-                } else {
-                    alert("❌ 비밀번호가 올바르지 않습니다.");
-                }
-                
-            } catch (error) {
-                console.error("로그인 처리 중 에러:", error);
-                alert("로그인 도중 오류가 발생했습니다.");
+            /* 활성화 되었을 때 서랍장처럼 열림 */
+            aside.mobile-active {
+                transform: translateX(0);
+            }
+            .wrapper {
+                /* 모바일에서는 사이드바 여백을 없애 전면 확장 */
+                margin-left: 0;
+            }
+            .menu-shortcut-grid {
+                /* 모바일에서 타일형 메뉴가 깨지지 않게 세로로 1열 정렬 */
+                grid-template-columns: 1fr;
+            }
+            header h2 {
+                font-size: 18px; /* 헤더 폰트 축소 */
             }
         }
-    });
-}
+    </style>
+</head>
+<body>
+
+    <aside id="sidebar">
+        <div class="sidebar-header">☀️ SOLAR FC</div>
+        <ul>
+            <li><a href="index.html" id="menu-home" class="active">🏠 홈</a></li>
+            <li><a href="time.html" id="menu-schedule">📅 일정관리</a></li>
+            <li><a href="#" id="menu-members">👥 회원관리</a></li>
+        </ul>
+    </aside>
+
+    <div class="wrapper" id="content-wrapper">
+        <header>
+            <div class="header-left">
+                <button class="btn-toggle-sidebar" id="btn-toggle">☰</button>
+                <h2>SOLAR FC 대시보드</h2>
+            </div>
+            <div class="user-section">
+                <span id="user-info">조회 중...</span>
+                <button class="btn-logout" id="btn-logout">로그아웃</button>
+            </div>
+        </header>
+
+        <main>
+            <div class="welcome-card">
+                <h3>☀️ SOLAR FC 클럽 시스템</h3>
+                <p>안녕하세요! 팀 멤버들과 함께 스케줄 및 훈련 현황을 한눈에 체계적으로 관리할 수 있는 친목 대시보드입니다.</p>
+            </div>
+
+            <div class="menu-shortcut-grid">
+                <a href="time.html" class="shortcut-card">
+                    <span class="icon">📅</span>
+                    훈련 및 경기 일정관리
+                </a>
+                <a href="#" class="shortcut-card" onclick="alert('SOLAR FC 회원 정보 관리 기능 준비 중입니다.')">
+                    <span class="icon">👥</span>
+                    팀 회원 데이터 명부
+                </a>
+            </div>
+        </main>
+    </div>
+
+    <script type="module">
+        const isLoggedIn = sessionStorage.getItem("isLoggedIn");
+        const userId = sessionStorage.getItem("userId");
+        const userName = sessionStorage.getItem("userName") || "크루멤버";
+
+        if (isLoggedIn !== "true" || !userId) {
+            alert("🔒 로그인이 필요한 페이지입니다. 로그인 화면으로 이동합니다.");
+            window.location.href = "login.html";
+        }
+
+        const userInfoElem = document.getElementById('user-info');
+        if (userInfoElem) userInfoElem.innerText = `🏃‍♂️ ${userName}님`;
+
+        document.getElementById('btn-logout')?.addEventListener('click', () => {
+            sessionStorage.clear();
+            alert("🔒 로그아웃 되었습니다.");
+            window.location.href = "login.html";
+        });
+
+        // 📱 모바일 터치 및 PC 반응형 토글 이벤트 바인딩
+        const sidebar = document.getElementById('sidebar');
+        const contentWrapper = document.getElementById('content-wrapper');
+        const toggleBtn = document.getElementById('btn-toggle');
+
+        if (toggleBtn && sidebar && contentWrapper) {
+            toggleBtn.addEventListener('click', (e) => {
+                e.stopPropagation(); // 이벤트 버블링 방어
+                if (window.innerWidth <= 768) {
+                    sidebar.classList.toggle('mobile-active');
+                } else {
+                    sidebar.classList.toggle('collapsed');
+                    contentWrapper.classList.toggle('expanded');
+                }
+            });
+        }
+
+        // 모바일 환경에서 사이드바 외부의 본문 영역 터치 시 메뉴가 자동으로 다시 닫히는 센스있는 UX 처리
+        document.body.addEventListener('click', () => {
+            if (window.innerWidth <= 768) {
+                sidebar.classList.remove('mobile-active');
+            }
+        });
+    </script>
+</body>
+</html>
