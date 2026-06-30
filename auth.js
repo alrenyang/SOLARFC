@@ -130,7 +130,7 @@ if (authForm) {
                     sessionStorage.setItem("userRole", userData.role);
                     
                     // [수정 완료] 로그인 성공 즉시 index.html 메인 스케줄 페이지로 이동
-                    window.location.href = "index.html";
+                    window.location.href = "time.html";
                 } else {
                     alert("❌ 비밀번호가 올바르지 않습니다.");
                 }

@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOLAR FC - 일정관리</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-color: #212529;
+            --sidebar-width: 240px;
+            --border-color: #e9ecef;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* ── 사이드바 스타일 ── */
+        aside {
+            width: var(--sidebar-width);
+            background-color: #1e293b;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s ease, margin-left 0.3s ease;
+            position: fixed;
+            top: 0; bottom: 0; left: 0;
+            z-index: 100;
+        }
+
+        aside.collapsed {
+            transform: translateX(calc(var(--sidebar-width) * -1));
+        }
+
+        aside .sidebar-header {
+            padding: 20px;
+            font-size: 20px;
+            font-weight: 700;
+            border-bottom: 1px solid #334155;
+            text-align: center;
+        }
+
+        aside ul { list-style: none; padding: 15px 0; }
+        aside ul li a {
+            display: block; padding: 15px 25px; color: #cbd5e1;
+            text-decoration: none; font-size: 16px; font-weight: 500; transition: all 0.2s;
+        }
+
+        aside ul li a:hover, aside ul li a.active {
+            background-color: #334155; color: #fff;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        /* ── 메인 콘텐츠 랩퍼 ── */
+        .wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            margin-left: var(--sidebar-width);
+            transition: margin-left 0.3s ease;
+            min-width: 0;
+        }
+
+        .wrapper.expanded { margin-left: 0; }
+
+        header {
+            background-color: var(--card-bg);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .header-left { display: flex; align-items: center; gap: 15px; }
+
+        .btn-toggle-sidebar {
+            background: none; border: none; font-size: 24px; cursor: pointer; color: #333;
+            display: flex; align-items: center; justify-content: center; padding: 5px; border-radius: 4px;
+        }
+        .btn-toggle-sidebar:hover { background-color: #f1f5f9; }
+
+        .user-section { display: flex; align-items: center; gap: 10px; }
+        .btn-logout {
+            background: none; border: 1px solid #dc3545; color: #dc3545;
+            padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px;
+        }
+        .btn-logout:hover { background-color: #dc3545; color: white; }
+
+        main {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* ── 주간 달력 ── */
+        .week-container {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            border: 1px solid var(--border-color);
+        }
+
+        .week-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        .week-days {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .day-tab {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px 5px;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s;
+            background: none;
+            border: none;
+        }
+
+        .day-tab .day-name {
+            font-size: 12px;
+            color: #6c757d;
+            margin-bottom: 4px;
+        }
+
+        .day-tab .day-num {
+            font-size: 16px;
+            font-weight: 700;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .day-tab:hover { background-color: #f1f5f9; }
+        .day-tab.active .day-num { background-color: var(--primary-color); color: white; }
+        .day-tab.active .day-name { color: var(--primary-color); font-weight: 700; }
+
+        /* ── 타임라인 세션 리스트 ── */
+        .schedule-timeline { display: flex; flex-direction: column; gap: 15px; }
+        .timeline-card {
+            background-color: var(--card-bg); border-radius: 12px; border: 1px solid var(--border-color);
+            padding: 20px; display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.02); transition: transform 0.2s;
+        }
+        .timeline-card:hover { transform: translateY(-2px); }
+
+        .time-box { font-size: 16px; font-weight: 700; color: #495057; min-width: 100px; }
+        .session-main { flex: 1; padding-left: 15px; border-left: 3px solid #dee2e6; }
+        .session-main h4 { font-size: 16px; margin-bottom: 6px; color: #111; }
+        .session-main p { font-size: 13px; color: #6c757d; margin-bottom: 4px; }
+        
+        .status-badge {
+            display: inline-block; font-size: 12px; font-weight: 700; padding: 4px 8px;
+            border-radius: 4px; background-color: #e2e8f0; color: #475569;
+        }
+        .status-badge.available { background-color: #e0f2fe; color: #0369a1; }
+
+        .btn-reserve {
+            background-color: var(--primary-color); color: white; border: none;
+            padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px;
+        }
+        .btn-reserve:disabled { background-color: #cbd5e1; cursor: not-allowed; color: #94a3b8; }
+
+        @media (max-width: 768px) {
+            aside { transform: translateX(calc(var(--sidebar-width) * -1)); }
+            aside.active { transform: translateX(0); }
+            .wrapper { margin-left: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <aside id="sidebar">
+        <div class="sidebar-header">☀️ SOLAR FC</div>
+        <ul>
+            <li><a href="index.html" id="menu-home">🏠 홈</a></li>
+            <li><a href="time.html" id="menu-schedule" class="active">📅 일정관리</a></li>
+            <li><a href="#" id="menu-members">👥 회원관리</a></li>
+        </ul>
+    </aside>
+
+    <div class="wrapper" id="content-wrapper">
+        <header>
+            <div class="header-left">
+                <button class="btn-toggle-sidebar" id="btn-toggle">☰</button>
+                <h2>SOLAR FC 일정관리</h2>
+            </div>
+            <div class="user-section">
+                <span id="user-info">조회 중...</span>
+                <button class="btn-logout" id="btn-logout">로그아웃</button>
+            </div>
+        </header>
+
+        <main>
+            <section class="week-container">
+                <div class="week-header">
+                    <span id="current-month-year">2026년 6월</span>
+                </div>
+                <div class="week-days" id="week-days-container"></div>
+            </section>
+
+            <section class="schedule-container">
+                <div class="schedule-timeline" id="schedule-list">
+                    <p class="loading">일정을 불러오는 중입니다...</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script type="module" src="time.js"></script>
+</body>
+</html>

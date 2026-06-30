@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FC CREW - 메인 스케줄</title>
+    <title>SOLAR FC - 메인 스케줄</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -11,52 +11,87 @@
             --bg-color: #f8f9fa;
             --card-bg: #ffffff;
             --text-color: #333;
+            --sidebar-width: 240px;
         }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
             font-family: 'Noto Sans KR', sans-serif;
             background-color: var(--bg-color);
-            margin: 0;
-            padding: 0;
             color: var(--text-color);
+            display: flex;
+            min-height: 100vh;
+            overflow-x: hidden;
         }
+
+        aside {
+            width: var(--sidebar-width);
+            background-color: #1e293b;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s ease, margin-left 0.3s ease;
+            position: fixed;
+            top: 0; bottom: 0; left: 0;
+            z-index: 100;
+        }
+
+        aside.collapsed {
+            transform: translateX(calc(var(--sidebar-width) * -1));
+        }
+
+        aside .sidebar-header {
+            padding: 20px;
+            font-size: 20px;
+            font-weight: 700;
+            border-bottom: 1px solid #334155;
+            text-align: center;
+        }
+
+        aside ul { list-style: none; padding: 15px 0; }
+        aside ul li a {
+            display: block; padding: 15px 25px; color: #cbd5e1;
+            text-decoration: none; font-size: 16px; font-weight: 500; transition: all 0.2s;
+        }
+
+        aside ul li a:hover, aside ul li a.active {
+            background-color: #334155; color: #fff;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .wrapper {
+            flex: 1; display: flex; flex-direction: column;
+            margin-left: var(--sidebar-width); transition: margin-left 0.3s ease; min-width: 0;
+        }
+
+        .wrapper.expanded { margin-left: 0; }
 
         header {
-            background-color: var(--card-bg);
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #dee2e6;
+            background-color: var(--card-bg); padding: 15px 20px;
+            display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #dee2e6;
         }
 
-        .user-section {
-            display: flex;
-            align-items: center;
-            gap: 10px;
+        .header-left { display: flex; align-items: center; gap: 15px; }
+
+        .btn-toggle-sidebar {
+            background: none; border: none; font-size: 24px; cursor: pointer; color: #333;
+            display: flex; align-items: center; justify-content: center; padding: 5px; border-radius: 4px; transition: background-color 0.2s;
         }
+        .btn-toggle-sidebar:hover { background-color: #f1f5f9; }
+
+        .user-section { display: flex; align-items: center; gap: 10px; }
 
         .btn-logout {
-            background: none;
-            border: 1px solid #dc3545;
-            color: #dc3545;
-            padding: 6px 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 13px;
+            background: none; border: 1px solid #dc3545; color: #dc3545;
+            padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px;
         }
         .btn-logout:hover { background-color: #dc3545; color: white; }
 
-        main {
-            max-width: 600px;
-            margin: 20px auto;
-            padding: 0 15px;
-        }
-
+        main { max-width: 600px; width: 100%; margin: 20px auto; padding: 0 15px; }
         .date-selector { margin-bottom: 20px; }
         .date-selector input[type="date"] {
-            width: 100%; padding: 12px; font-size: 16px;
-            border: 1px solid #ced4da; border-radius: 8px;
+            width: 100%; padding: 12px; font-size: 16px; border: 1px solid #ced4da; border-radius: 8px;
         }
 
         .schedule-card {
@@ -74,30 +109,50 @@
             padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold;
         }
         .btn-reserve:disabled { background-color: #ced4da; cursor: not-allowed; }
+
+        @media (max-width: 768px) {
+            aside { transform: translateX(calc(var(--sidebar-width) * -1)); }
+            aside.active { transform: translateX(0); }
+            .wrapper { margin-left: 0; }
+        }
     </style>
 </head>
 <body>
 
-    <header>
-        <h2>⚽ FC CREW 스케줄</h2>
-        <div class="user-section">
-            <span id="user-info">조회 중...</span>
-            <button class="btn-logout" id="btn-logout">로그아웃</button>
-        </div>
-    </header>
+    <aside id="sidebar">
+        <div class="sidebar-header">☀️ SOLAR FC</div>
+        <ul>
+            <li><a href="#" id="menu-home">🏠 홈</a></li>
+            <li><a href="#" id="menu-schedule" class="active">📅 일정관리</a></li>
+            <li><a href="#" id="menu-members">👥 회원관리</a></li>
+        </ul>
+    </aside>
 
-    <main>
-        <section class="date-selector">
-            <input type="date" id="target-date" value="2026-06-30">
-        </section>
-
-        <section class="schedule-container">
-            <h3>선택한 날짜의 세션</h3>
-            <div id="schedule-list">
-                <p>일정을 불러오는 중입니다...</p>
+    <div class="wrapper" id="content-wrapper">
+        <header>
+            <div class="header-left">
+                <button class="btn-toggle-sidebar" id="btn-toggle">☰</button>
+                <h2>SOLAR FC 스케줄</h2>
             </div>
-        </section>
-    </main>
+            <div class="user-section">
+                <span id="user-info">조회 중...</span>
+                <button class="btn-logout" id="btn-logout">로그아웃</button>
+            </div>
+        </header>
+
+        <main>
+            <section class="date-selector">
+                <input type="date" id="target-date" value="2026-06-30">
+            </section>
+
+            <section class="schedule-container">
+                <h3>선택한 날짜의 세션</h3>
+                <div id="schedule-list">
+                    <p>일정을 불러오는 중입니다...</p>
+                </div>
+            </section>
+        </main>
+    </div>
 
     <script type="module" src="main.js"></script>
 </body>

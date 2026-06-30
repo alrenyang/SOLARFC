@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FC CREW - 로그인 & 회원가입</title>
+    <title>SOLAR FC - 로그인 & 회원가입</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -13,9 +13,7 @@
             --text-color: #212529;
             --border-color: #dee2e6;
         }
-
         * { box-sizing: border-box; margin: 0; padding: 0; }
-
         body {
             font-family: 'Noto Sans KR', sans-serif;
             background-color: var(--bg-color);
@@ -26,7 +24,6 @@
             min-height: 100vh;
             padding: 20px;
         }
-
         .login-container {
             background-color: var(--card-bg);
             width: 100%;
@@ -36,26 +33,21 @@
             box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
             text-align: center;
         }
-
         .logo-area { margin-bottom: 30px; }
         .logo-area .icon { font-size: 48px; margin-bottom: 10px; }
         .logo-area h2 { font-size: 24px; font-weight: 700; color: #111; }
         .logo-area p { font-size: 14px; color: #6c757d; margin-top: 5px; }
-
         .tab-menu { display: flex; margin-bottom: 25px; border-bottom: 2px solid var(--border-color); }
-
         .tab-btn {
             flex: 1; padding: 12px; background: none; border: none;
             font-size: 16px; font-weight: 500; color: #6c757d; cursor: pointer; outline: none;
         }
-
         .tab-btn.active {
             color: var(--primary-color);
             border-bottom: 2px solid var(--primary-color);
             margin-bottom: -2px;
             font-weight: 700;
         }
-
         .input-group { margin-bottom: 16px; text-align: left; }
         .input-group label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px; color: #495057; }
         .input-group input {
@@ -63,9 +55,7 @@
             border-radius: 8px; background-color: #fff; outline: none; transition: border-color 0.2s;
         }
         .input-group input:focus { border-color: var(--primary-color); }
-
         .signup-only { display: none; }
-
         .btn-submit {
             width: 100%; padding: 14px; font-size: 16px; font-weight: 700; color: #fff;
             background-color: var(--primary-color); border: none; border-radius: 8px;
@@ -79,7 +69,7 @@
     <div class="login-container">
         <div class="logo-area">
             <div class="icon">⚽</div>
-            <h2>FC CREW</h2>
+            <h2>SOLAR FC</h2>
             <p id="sub-title">클럽 회원 관리 시스템</p>
         </div>
 
@@ -106,7 +96,7 @@
 
             <div class="input-group signup-only">
                 <label for="user-phone">연락처</label>
-                <input type="tel" id="user-phone" placeholder="010-1234-5678">
+                <input type="tel" id="user-phone" placeholder="010-1234-5678" maxlength="13">
             </div>
 
             <button type="submit" class="btn-submit" id="btn-submit-text">로그인하기</button>
@@ -120,7 +110,6 @@
         const submitText = document.getElementById('btn-submit-text');
         const subTitleText = document.getElementById('sub-title');
 
-        // 회원가입 탭 클릭 시
         signupTabBtn.addEventListener('click', () => {
             loginTabBtn.classList.remove('active');
             signupTabBtn.classList.add('active');
@@ -132,7 +121,6 @@
             document.getElementById('user-phone').required = true;
         });
 
-        // 로그인 탭 클릭 시
         loginTabBtn.addEventListener('click', () => {
             signupTabBtn.classList.remove('active');
             loginTabBtn.classList.add('active');
@@ -143,6 +131,25 @@
             document.getElementById('user-name').required = false;
             document.getElementById('user-phone').required = false;
         });
+
+        const phoneInput = document.getElementById('user-phone');
+        if (phoneInput) {
+            phoneInput.addEventListener('input', (e) => {
+                let value = e.target.value.replace(/[^0-9]/g, '');
+                let result = '';
+                
+                if (value.length < 4) {
+                    result = value;
+                } else if (value.length < 7) {
+                    result = value.substr(0, 3) + '-' + value.substr(3);
+                } else if (value.length < 11) {
+                    result = value.substr(0, 3) + '-' + value.substr(3, 3) + '-' + value.substr(6);
+                } else {
+                    result = value.substr(0, 3) + '-' + value.substr(3, 4) + '-' + value.substr(7);
+                }
+                e.target.value = result;
+            });
+        }
     </script>
 
     <script type="module" src="auth.js"></script>
