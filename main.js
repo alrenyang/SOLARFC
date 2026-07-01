@@ -21,15 +21,14 @@ if (isLoggedIn !== "true" || !userId) {
     window.location.href = "login.html";
 }
 
-// 3. 🚨 [핵심 기능] 관리자 권한 메뉴 필터링 
-// 아이디가 '관리자'가 아니면 회원관리(menu-members)와 계정관리(menu-account)를 숨깁니다.
+// 3. 🚨 [메뉴 필터링] 관리자 권한 메뉴 제어
+// 아이디가 '관리자'가 아니면 회원관리(menu-members)와 계정관리(menu-account)를 화면에서 지웁니다.
 if (userId !== "관리자") {
     const adminMenus = ['menu-members', 'menu-account'];
     adminMenus.forEach(id => {
         const menuElem = document.getElementById(id);
         if (menuElem) {
-            // 부모 li 태그를 통째로 숨겨서 메뉴바 간격을 깔끔하게 유지합니다.
-            menuElem.parentElement.style.display = 'none';
+            menuElem.parentElement.style.display = 'none'; // 부모 li 태그 은닉
         }
     });
 }
@@ -50,15 +49,19 @@ if (userInfoElem) {
     userInfoElem.innerText = `🏃‍♂️ ${userName}님`;
 }
 
-// 5. 사이드바 메뉴 클릭 제어
+// 5. ✨ [버그 수정 완료] 사이드바 메뉴 클릭 라우터 엔진 안정화
 const menuIds = ['menu-home', 'menu-schedule', 'menu-members', 'menu-info', 'menu-account', 'menu-coupon'];
 menuIds.forEach(id => {
     const menuElem = document.getElementById(id);
     if (menuElem) {
         menuElem.addEventListener('click', (e) => {
-            if (menuElem.getAttribute('href') === '#' || menuElem.getAttribute('href') === '') {
+            const href = menuElem.getAttribute('href');
+            
+            // 💥 [해결] 링크가 없거나, 비어있거나, '#' 주소인 낙오 메뉴만 실행을 막습니다.
+            // member.html, master.html 처럼 주소가 명확히 들어가 있으면 이 if문을 타지 않고 정상 페이지 이동됩니다!
+            if (!href || href === '#' || href === '') {
                 e.preventDefault();
-                alert("연동 주소가 바르게 세팅되지 않았습니다.");
+                alert("🔒 아직 주소가 연동되지 않은 준비 중인 메뉴입니다.");
             }
         });
     }
