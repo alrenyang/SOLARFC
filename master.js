@@ -82,7 +82,8 @@ function initMemberList() {
 
             // 최고관리자('관리자' 아이디) 데이터 본인은 수정/삭제 대상에서 제외 처리하여 시스템 꼬임 방지
             if (data.userId !== '관리자') {
-                tr.addEventListener('click', () => openEditModal(data));
+                // 💥 중요: Firestore 실제 문서의 고유 ID 키값(userDoc.id)을 함께 넘겨주어 식별자 꼬임을 원천 차단합니다.
+                tr.addEventListener('click', () => openEditModal(data, userDoc.id));
             } else {
                 tr.style.cursor = 'default';
                 tr.title = '시스템 마스터 계정은 임의 수정할 수 없습니다.';
@@ -95,9 +96,15 @@ function initMemberList() {
     });
 }
 
+// 💥 변수 전역 스코프 안전핀 확보 (실제 파이어베이스 도큐먼트 ID 보관용)
+let currentTargetDocId = "";
+
 // 3. ⚙️ 모달 활성화 및 타겟 데이터 바인딩 로직
-function openEditModal(userData) {
+function openEditModal(userData, docId) {
     if (!modalOverlay) return;
+    
+    // 파이어베이스 실제 문서 키값 안전하게 백업
+    currentTargetDocId = docId || userData.userId;
     
     mId.value = userData.userId;
     mName.value = userData.name || '';
@@ -115,7 +122,8 @@ modalContent?.addEventListener('click', (e) => e.stopPropagation());
 
 // 4. ✨ 실시간 정보 수정(Update) 처리 트랜잭션 함수
 document.getElementById('btn-modal-update')?.addEventListener('click', async () => {
-    const targetId = mId.value;
+    // 백업해둔 실제 문서 식별자가 없으면 화면상의 아이디를 대안으로 추적
+    const targetId = currentTargetDocId || mId.value;
     if (!targetId) return;
 
     if (!mName.value.trim() || !mPhone.value.trim()) {
@@ -135,25 +143,28 @@ document.getElementById('btn-modal-update')?.addEventListener('click', async () 
         alert("⚙️ 회원 정보가 성공적으로 업데이트되었습니다!");
         modalOverlay.classList.remove('show');
     } catch (err) {
-        alert("정보 수정 실패: " + err.message);
+        console.error("수정 오류 상세:", err);
+        alert(`🚨 서버 업데이트 실패:\n[원인] ${err.message}\n파이어베이스 콘솔의 Firestore 규칙(Rules) 설정을 재차 확인해 주세요.`);
     }
 });
 
-// 5. 🚨 [교정 완료] 실시간 회원 탈퇴/삭제(Delete) 처리 함수
-// HTML 양식과 일치하도록 ID를 'btn-modal-delete'로 정확하게 수정했습니다.
+// 5. 🚨 실시간 회원 탈퇴/삭제(Delete) 처리 함수
 document.getElementById('btn-modal-delete')?.addEventListener('click', async () => {
-    const targetId = mId.value;
+    const targetId = currentTargetDocId || mId.value;
     if (!targetId) return;
 
     const confirmCheck = confirm(`🛑 정말로 [${mName.value}] 회원을 클럽 시스템 명부에서 영구 삭제하시겠습니까?\n삭제된 데이터는 파이어베이스에서 복구할 수 없습니다.`);
     if (!confirmCheck) return;
 
     try {
-        await deleteDoc(doc(db, "users", targetId));
+        const userDocRef = doc(db, "users", targetId);
+        await deleteDoc(userDocRef);
+        
         alert("🗑️ 해당 유저 데이터가 안전하게 파이어베이스 명부에서 영구 삭제되었습니다.");
         modalOverlay.classList.remove('show');
     } catch (err) {
-        alert("회원 제거 실패: " + err.message);
+        console.error("삭제 오류 상세:", err);
+        alert(`🚨 서버 삭제 처리 실패:\n[원인] ${err.message}\n파이어베이스 콘솔의 Firestore 규칙(Rules) 설정을 재차 확인해 주세요.`);
     }
 });
 
