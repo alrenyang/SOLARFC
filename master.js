@@ -13,7 +13,6 @@ const firebaseConfig = {
 // 1. 보안 권한 세션 무결성 스캔
 const isLoggedIn = sessionStorage.getItem("isLoggedIn");
 const userId = sessionStorage.getItem("userId");
-const userName = sessionStorage.getItem("userName") || "크루멤버";
 
 if (isLoggedIn !== "true" || !userId) {
     alert("🔒 로그인이 필요한 페이지입니다. 로그인 화면으로 이동합니다.");
@@ -25,15 +24,6 @@ if (userId !== "관리자") {
     alert("🛑 접근 권한이 없습니다. 마스터 관리자 전용 영역입니다.");
     window.location.href = "index.html";
 }
-
-const userInfoElem = document.getElementById('user-info');
-if (userInfoElem) userInfoElem.innerText = `👑 관리자 계정`;
-
-document.getElementById('btn-logout')?.addEventListener('click', () => {
-    sessionStorage.clear();
-    alert("🔒 로그아웃 되었습니다.");
-    window.location.href = "login.html";
-});
 
 // Firebase 연동 리소스 초기화
 const app = initializeApp(firebaseConfig);
