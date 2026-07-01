@@ -138,6 +138,7 @@
         }
         .btn-reserve:disabled { background-color: #cbd5e1; cursor: not-allowed; color: #94a3b8; }
 
+        /* ── 📝 [복원 완료] 1주 단위 그룹 선택 캘린더 모달 팝업 CSS ── */
         .modal-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0,0,0,0.4); display: none; justify-content: center; align-items: center; z-index: 3000; padding: 15px;
         }
@@ -155,12 +156,14 @@
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; font-size: 13px; }
         .grid-header { font-weight: 500; color: #6c757d; padding: 5px 0; }
         
+        /* 1주일 로우 단위 하이라이팅 스튜디오메이트 커스텀 클래스 */
         .calendar-row-group { display: contents; cursor: pointer; }
         .cal-day {
             padding: 10px 0; font-weight: 500; color: #1e293b; display: flex; align-items: center; justify-content: center; transition: all 0.1s;
         }
         .cal-day.other-month { color: #cbd5e1; }
 
+        /* 마우스 호버 및 선택 시 7일 영역이 연한 블루박스로 한 번에 묶여 표현됩니다 */
         .calendar-row-group:hover .cal-day { background-color: #f0f7ff; }
         .calendar-row-group.selected-week .cal-day { background-color: #e0f2fe; color: var(--primary-color); font-weight: 700; }
         .calendar-row-group.selected-week .cal-day:first-of-type { border-top-left-radius: 8px; border-bottom-left-radius: 8px; }
@@ -189,7 +192,7 @@
         <div class="sidebar-header">☀️ SOLAR FC</div>
         <ul>
             <li><a href="index.html" id="menu-home">🏠 홈</a></li>
-            <li><a href="time.html" id="menu-schedule">📅 일정관리</a></li>
+            <li><a href="time.html" id="menu-schedule" class="active">📅 일정관리</a></li>
             <li><a href="coupon.html" id="menu-coupon">🎟️ 쿠폰</a></li>
             <li><a href="info.html" id="menu-info">ℹ️ 회원정보</a></li>
             <li style="display: none;"><a href="member.html" id="menu-members">👥 회원관리</a></li>
@@ -213,4 +216,60 @@
             <section class="week-container">
                 <div class="week-header">
                     <span id="current-week-range">조회 중...</span>
-                    <button class="btn-open-calendar" id="btn-open
+                    <button class="btn-open-calendar" id="btn-open-cal" type="button">📅</button>
+                </div>
+                <div class="week-days" id="week-days-container"></div>
+            </section>
+
+            <section class="schedule-container">
+                <div class="schedule-timeline" id="schedule-list">
+                    <p class="loading">일정을 불러오는 중입니다...</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div class="modal-overlay" id="calendar-modal-overlay">
+        <div class="calendar-modal" id="calendar-modal-content">
+            <div class="modal-cal-header">
+                <button class="btn-cal-nav" id="btn-prev-month">◀</button>
+                <span id="modal-month-title">2026년 06월</span>
+                <button class="btn-cal-nav" id="btn-next-month">▶</button>
+            </div>
+            <div class="calendar-grid">
+                <div class="grid-header">월</div><div class="grid-header">화</div><div class="grid-header">수</div>
+                <div class="grid-header">목</div><div class="grid-header">금</div><div class="grid-header">토</div><div class="grid-header">일</div>
+                <div id="modal-days-grid-body" style="display: contents;"></div>
+            </div>
+            <button class="btn-modal-close" id="btn-close-cal">닫기</button>
+        </div>
+    </div>
+
+    <script type="module" src="time.js"></script>
+    <script type="module" src="main.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const sidebar = document.getElementById('sidebar');
+            const contentWrapper = document.getElementById('content-wrapper');
+            const toggleBtn = document.getElementById('btn-toggle');
+
+            if (toggleBtn && sidebar && contentWrapper) {
+                toggleBtn.addEventListener('click', (e) => {
+                    e.stopPropagation(); 
+                    if (window.innerWidth <= 768) {
+                        sidebar.classList.toggle('mobile-active');
+                    } else {
+                        sidebar.classList.toggle('collapsed');
+                        contentWrapper.classList.toggle('expanded');
+                    }
+                });
+            }
+            if (sidebar) sidebar.addEventListener('click', (e) => e.stopPropagation());
+            document.addEventListener('click', () => {
+                if (window.innerWidth <= 768 && sidebar) sidebar.classList.remove('mobile-active');
+            });
+        });
+    </script>
+</body>
+</html>

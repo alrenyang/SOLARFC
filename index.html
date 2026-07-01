@@ -54,7 +54,7 @@
         aside ul { list-style: none; padding: 10px 0; }
         aside ul li a {
             display: block; 
-            padding: 12px 20px; /* 메뉴가 늘어남에 따라 세로 패딩을 15px->12px로 최적화 */
+            padding: 12px 20px;
             color: #cbd5e1;
             text-decoration: none;
             font-size: 15px;
@@ -176,7 +176,7 @@
     <aside id="sidebar">
         <div class="sidebar-header">☀️ SOLAR FC</div>
         <ul>
-            <li><a href="index.html" id="menu-home">🏠 홈</a></li>
+            <li><a href="index.html" id="menu-home" class="active">🏠 홈</a></li>
             <li><a href="time.html" id="menu-schedule">📅 일정관리</a></li>
             <li><a href="coupon.html" id="menu-coupon">🎟️ 쿠폰</a></li>
             <li><a href="info.html" id="menu-info">ℹ️ 회원정보</a></li>
@@ -208,57 +208,10 @@
                     <span class="icon">📅</span>
                     훈련 및 경기 일정관리
                 </a>
-                <a href="#" class="shortcut-card" onclick="alert('SOLAR FC 회원 정보 관리 기능 준비 중입니다.')">
+                <a href="member.html" class="shortcut-card">
                     <span class="icon">👥</span>
                     팀 회원 데이터 명부
                 </a>
             </div>
         </main>
     </div>
-
-    <script type="module">
-        const isLoggedIn = sessionStorage.getItem("isLoggedIn");
-        const userId = sessionStorage.getItem("userId");
-        const userName = sessionStorage.getItem("userName") || "크루멤버";
-
-        if (isLoggedIn !== "true" || !userId) {
-            alert("🔒 로그인이 필요한 페이지입니다. 로그인 화면으로 이동합니다.");
-            window.location.href = "login.html";
-        }
-
-        const userInfoElem = document.getElementById('user-info');
-        if (userInfoElem) userInfoElem.innerText = `🏃‍♂️ ${userName}님`;
-
-        document.getElementById('btn-logout')?.addEventListener('click', () => {
-            sessionStorage.clear();
-            alert("🔒 로그아웃 되었습니다.");
-            window.location.href = "login.html";
-        });
-
-        const sidebar = document.getElementById('sidebar');
-        const contentWrapper = document.getElementById('content-wrapper');
-        const toggleBtn = document.getElementById('btn-toggle');
-
-        if (toggleBtn && sidebar && contentWrapper) {
-            toggleBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                if (window.innerWidth <= 768) {
-                    sidebar.classList.toggle('mobile-active');
-                } else {
-                    sidebar.classList.toggle('collapsed');
-                    contentWrapper.classList.toggle('expanded');
-                }
-            });
-        }
-
-        sidebar.addEventListener('click', (e) => { e.stopPropagation(); });
-
-        document.addEventListener('click', () => {
-            if (window.innerWidth <= 768) {
-                sidebar.classList.remove('mobile-active');
-            }
-        });
-    </script>
-    <script type="module" src="main.js"></script>
-</body>
-</html>
