@@ -139,7 +139,8 @@ document.getElementById('btn-modal-update')?.addEventListener('click', async () 
     }
 });
 
-// 5. 🚨 실시간 회원 탈퇴/삭제(Delete) 처리 함수
+// 5. 🚨 [교정 완료] 실시간 회원 탈퇴/삭제(Delete) 처리 함수
+// HTML 양식과 일치하도록 ID를 'btn-modal-delete'로 정확하게 수정했습니다.
 document.getElementById('btn-modal-delete')?.addEventListener('click', async () => {
     const targetId = mId.value;
     if (!targetId) return;
