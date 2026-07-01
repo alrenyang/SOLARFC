@@ -31,20 +31,20 @@ if (isLoggedIn !== "true" || !userId) {
 const userInfoElem = document.getElementById('user-info');
 if (userInfoElem) userInfoElem.innerText = `🏃‍♂️ ${userName}님`;
 
-const menuIds = ['menu-home', 'menu-schedule', 'menu-members'];
+// 메뉴 클릭 제어 (새 HTML 독립 리다이렉트 완전 개방)
+const menuIds = ['menu-home', 'menu-schedule', 'menu-members', 'menu-info', 'menu-account', 'menu-coupon'];
 menuIds.forEach(id => {
     const menuElem = document.getElementById(id);
     if (menuElem) {
         menuElem.addEventListener('click', (e) => {
             if (menuElem.getAttribute('href') === '#' || menuElem.getAttribute('href') === '') {
                 e.preventDefault();
-                alert("SOLAR FC 회원 정보 관리 기능은 현재 준비 중입니다.");
+                alert("연동 주소가 바르게 세팅되지 않았습니다.");
             }
         });
     }
 });
 
-// ── 📅 주간 및 팝업 달력 정밀 관리 엔진 ──
 let currentViewDate = new Date(); 
 let currentSelectedMonday = new Date(); 
 let selectedDate = new Date().toISOString().split('T')[0]; 
@@ -184,7 +184,6 @@ document.getElementById('btn-next-month')?.addEventListener('click', () => {
     renderModalCalendar();
 });
 
-// Firebase 데이터베이스 초기화
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const scheduleList = document.getElementById('schedule-list');
@@ -247,6 +246,5 @@ async function bookSchedule(scheduleId) {
     } catch (e) { alert("예약 실패: " + e); }
 }
 
-// 초기 호출 정상 연동 바인딩
 updateWeeklyTabs();
 loadSchedules(selectedDate);

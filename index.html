@@ -51,14 +51,20 @@
             text-align: center;
         }
 
-        aside ul { list-style: none; padding: 15px 0; }
+        aside ul { list-style: none; padding: 10px 0; }
         aside ul li a {
-            display: block; padding: 15px 25px; color: #cbd5e1;
-            text-decoration: none; font-size: 16px; font-weight: 500; transition: all 0.2s;
+            display: block; 
+            padding: 12px 20px; /* 메뉴가 늘어남에 따라 세로 패딩을 15px->12px로 최적화 */
+            color: #cbd5e1;
+            text-decoration: none;
+            font-size: 15px;
+            font-weight: 500;
+            transition: all 0.2s;
         }
 
         aside ul li a:hover, aside ul li a.active {
-            background-color: #334155; color: #fff;
+            background-color: #334155;
+            color: #fff;
             border-left: 4px solid var(--primary-color);
         }
 
@@ -84,13 +90,7 @@
             gap: 10px;
         }
 
-        .header-left { 
-            display: flex; 
-            align-items: center; 
-            gap: 10px; 
-            min-width: 0;
-            flex: 1;
-        }
+        .header-left { display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1; }
 
         .btn-toggle-sidebar {
             background: none; border: none; font-size: 24px; cursor: pointer; color: #333;
@@ -100,7 +100,7 @@
         .btn-toggle-sidebar:hover { background-color: #f1f5f9; }
 
         header h2 {
-            font-size: clamp(15px, 4.5vw, 20px);
+            font-size: clamp(14px, 4.2vw, 20px);
             font-weight: 700;
             white-space: nowrap;
             overflow: hidden;
@@ -108,17 +108,8 @@
             min-width: 0;
         }
 
-        .user-section { 
-            display: flex; 
-            align-items: center; 
-            gap: 8px; 
-            flex-shrink: 0;
-        }
-        
-        #user-info {
-            font-size: clamp(12px, 3.2vw, 14px);
-            white-space: nowrap;
-        }
+        .user-section { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+        #user-info { font-size: clamp(11px, 3vw, 14px); white-space: nowrap; }
 
         .btn-logout {
             background: none; border: 1px solid #dc3545; color: #dc3545;
@@ -187,7 +178,10 @@
         <ul>
             <li><a href="index.html" id="menu-home" class="active">🏠 홈</a></li>
             <li><a href="time.html" id="menu-schedule">📅 일정관리</a></li>
+            <li><a href="#" id="menu-coupon">🎟️ 쿠폰</a></li>
+            <li><a href="#" id="menu-info">ℹ️ 회원정보</a></li>
             <li><a href="#" id="menu-members">👥 회원관리</a></li>
+            <li><a href="#" id="menu-account">⚙️ 계정관리</a></li>
         </ul>
     </aside>
 
@@ -206,7 +200,7 @@
         <main>
             <div class="welcome-card">
                 <h3>☀️ SOLAR FC 클럽 시스템</h3>
-                <p>안녕하세요! 스케줄 및 훈련 현황을 한눈에 체계적으로 관리할 수 있는 친목 대시보드입니다.</p>
+                <p>안녕하세요! 팀 멤버들과 함께 스케줄 및 훈련 현황을 한눈에 체계적으로 관리할 수 있는 친목 대시보드입니다.</p>
             </div>
 
             <div class="menu-shortcut-grid">
@@ -265,5 +259,6 @@
             }
         });
     </script>
+    <script type="module" src="main.js"></script>
 </body>
 </html>

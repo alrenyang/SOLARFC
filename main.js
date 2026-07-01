@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getFirestore, collection, query, where, onSnapshot, doc, runTransaction } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyDn7oGNdD02WceJwIvz_zNitJx5bATD8jY",
@@ -10,12 +10,12 @@ const firebaseConfig = {
     appId: "1:267444798176:web:c85dcf7385aa02e5790685"
 };
 
-// 1. 세션 데이터 안전하게 가져오기
+// 1. 세션 데이터 검증
 const isLoggedIn = sessionStorage.getItem("isLoggedIn");
 const userId = sessionStorage.getItem("userId");
 const userName = sessionStorage.getItem("userName") || "크루멤버";
 
-// 2. [로그아웃 기능]
+// 2. 로그아웃 제어
 const logoutBtn = document.getElementById('btn-logout');
 if (logoutBtn) {
     logoutBtn.addEventListener('click', () => {
@@ -25,34 +25,33 @@ if (logoutBtn) {
     });
 }
 
-// 3. [보안 접근 제어] 로그인 상태 확인 (홈화면 무한루프 방지용 login.html 검증)
+// 3. 보안 접근 통제
 if (isLoggedIn !== "true" || !userId) {
     alert("🔒 로그인이 필요한 페이지입니다. 로그인 화면으로 이동합니다.");
     window.location.href = "login.html";
 }
 
-// 상단 헤더 유저 이름 매핑
+// 상단 헤더 프로필 닉네임 매핑
 const userInfoElem = document.getElementById('user-info');
 if (userInfoElem) {
     userInfoElem.innerText = `🏃‍♂️ ${userName}님`;
 }
 
-// 4. [사이드바 메뉴 클릭 제어] - 홈, 일정관리는 정상 이동 / 회원관리만 차단 후 알림창
-const menuIds = ['menu-home', 'menu-schedule', 'menu-members'];
+// 4. 사이드바 메뉴 클릭 제어 (✨ 별도 파일 연동을 위해 alert 차단 코드 완전 해제)
+const menuIds = ['menu-home', 'menu-schedule', 'menu-members', 'menu-info', 'menu-account', 'menu-coupon'];
 menuIds.forEach(id => {
     const menuElem = document.getElementById(id);
     if (menuElem) {
         menuElem.addEventListener('click', (e) => {
-            // href가 '#' 이거나 비어있는 경우(즉, 주소가 없는 회원관리 메뉴)만 강제 차단 후 알림
+            // 주소가 빈 채로 '#' 만 들어가 있는 특수 예외 상황이 아니라면, e.preventDefault()를 작동시키지 않고
+            // 각 HTML에 적혀있는 주소(member.html, info.html 등)로 정상 이동되도록 자연스럽게 열어둡니다.
             if (menuElem.getAttribute('href') === '#' || menuElem.getAttribute('href') === '') {
                 e.preventDefault();
-                alert("SOLAR FC 회원 정보 관리 기능은 현재 준비 중입니다.");
+                alert("연동 주소가 바르게 세팅되지 않았습니다.");
             }
-            // index.html 또는 time.html 주소가 적힌 메뉴는 e.preventDefault()를 타지 않으므로 정상 작동합니다.
         });
     }
 });
 
-// Firebase 및 Firestore 초기화 (향후 홈 화면 데이터 필요 시 확장 영역)
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
