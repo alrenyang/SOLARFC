@@ -15,7 +15,26 @@ const isLoggedIn = sessionStorage.getItem("isLoggedIn");
 const userId = sessionStorage.getItem("userId");
 const userName = sessionStorage.getItem("userName") || "크루멤버";
 
-// 2. 로그아웃 제어
+// 2. 보안 접근 통제 (미로그인 시 튕겨내기)
+if (isLoggedIn !== "true" || !userId) {
+    alert("🔒 로그인이 필요한 페이지입니다. 로그인 화면으로 이동합니다.");
+    window.location.href = "login.html";
+}
+
+// 3. 🚨 [핵심 기능] 관리자 권한 메뉴 필터링 
+// 아이디가 '관리자'가 아니면 회원관리(menu-members)와 계정관리(menu-account)를 숨깁니다.
+if (userId !== "관리자") {
+    const adminMenus = ['menu-members', 'menu-account'];
+    adminMenus.forEach(id => {
+        const menuElem = document.getElementById(id);
+        if (menuElem) {
+            // 부모 li 태그를 통째로 숨겨서 메뉴바 간격을 깔끔하게 유지합니다.
+            menuElem.parentElement.style.display = 'none';
+        }
+    });
+}
+
+// 4. 로그아웃 제어
 const logoutBtn = document.getElementById('btn-logout');
 if (logoutBtn) {
     logoutBtn.addEventListener('click', () => {
@@ -25,26 +44,18 @@ if (logoutBtn) {
     });
 }
 
-// 3. 보안 접근 통제
-if (isLoggedIn !== "true" || !userId) {
-    alert("🔒 로그인이 필요한 페이지입니다. 로그인 화면으로 이동합니다.");
-    window.location.href = "login.html";
-}
-
 // 상단 헤더 프로필 닉네임 매핑
 const userInfoElem = document.getElementById('user-info');
 if (userInfoElem) {
     userInfoElem.innerText = `🏃‍♂️ ${userName}님`;
 }
 
-// 4. 사이드바 메뉴 클릭 제어 (✨ 별도 파일 연동을 위해 alert 차단 코드 완전 해제)
+// 5. 사이드바 메뉴 클릭 제어
 const menuIds = ['menu-home', 'menu-schedule', 'menu-members', 'menu-info', 'menu-account', 'menu-coupon'];
 menuIds.forEach(id => {
     const menuElem = document.getElementById(id);
     if (menuElem) {
         menuElem.addEventListener('click', (e) => {
-            // 주소가 빈 채로 '#' 만 들어가 있는 특수 예외 상황이 아니라면, e.preventDefault()를 작동시키지 않고
-            // 각 HTML에 적혀있는 주소(member.html, info.html 등)로 정상 이동되도록 자연스럽게 열어둡니다.
             if (menuElem.getAttribute('href') === '#' || menuElem.getAttribute('href') === '') {
                 e.preventDefault();
                 alert("연동 주소가 바르게 세팅되지 않았습니다.");
