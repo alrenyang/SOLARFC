@@ -75,7 +75,7 @@ function initMemberList() {
 
             // 최고관리자('관리자' 아이디) 데이터 본인은 수정/삭제 대상에서 제외 처리하여 시스템 꼬임 방지
             if (data.userId !== '관리자') {
-                // ✨ [버그 해결 핵심]: 클릭 이벤트 발생 시 고유 문서 ID인 userDoc.id를 명확히 넘겨줍니다.
+                // ✨ [식별자 꼬임 원천 해결]: 클릭 이벤트 발생 시 고유 문서 ID인 userDoc.id를 명확히 바인딩합니다.
                 tr.addEventListener('click', () => openEditModal(data, userDoc.id));
             } else {
                 tr.style.cursor = 'default';
@@ -93,7 +93,7 @@ function initMemberList() {
 function openEditModal(userData, docId) {
     if (!modalOverlay) return;
     
-    // ✨ 전역 변수에 파이어베이스의 실제 문서 ID 키값을 안전하게 격리 보관합니다.
+    // ✨ 전역 변수에 파이어베이스의 실제 문서 ID 키값을 안정적으로 이식
     currentTargetDocId = docId;
     
     mId.value = userData.userId;
@@ -112,7 +112,6 @@ modalContent?.addEventListener('click', (e) => e.stopPropagation());
 
 // 4. ✨ 실시간 정보 수정(Update) 처리 트랜잭션 함수
 document.getElementById('btn-modal-update')?.addEventListener('click', async () => {
-    // ✨ undefined 버그 완전 차단: 백엔드 고유 ID가 있으면 그것을 최우선으로 지정합니다.
     const targetId = currentTargetDocId || mId.value;
     if (!targetId) {
         alert("❌ 선택된 회원의 고유 식별 주소를 찾을 수 없습니다.");
@@ -142,7 +141,6 @@ document.getElementById('btn-modal-update')?.addEventListener('click', async () 
 
 // 5. 🚨 실시간 회원 탈퇴/삭제(Delete) 처리 함수
 document.getElementById('btn-modal-delete')?.addEventListener('click', async () => {
-    // ✨ undefined 버그 완전 차단: 백엔드 고유 ID가 있으면 그것을 최우선으로 지정합니다.
     const targetId = currentTargetDocId || mId.value;
     if (!targetId) {
         alert("❌ 선택된 회원의 고유 식별 주소를 찾을 수 없습니다.");

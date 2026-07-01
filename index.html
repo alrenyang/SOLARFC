@@ -215,3 +215,31 @@
             </div>
         </main>
     </div>
+
+    <script type="module" src="main.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const sidebar = document.getElementById('sidebar');
+            const contentWrapper = document.getElementById('content-wrapper');
+            const toggleBtn = document.getElementById('btn-toggle');
+
+            if (toggleBtn && sidebar && contentWrapper) {
+                toggleBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (window.innerWidth <= 768) {
+                        sidebar.classList.toggle('mobile-active');
+                    } else {
+                        sidebar.classList.toggle('collapsed');
+                        contentWrapper.classList.toggle('expanded');
+                    }
+                });
+            }
+            if (sidebar) sidebar.addEventListener('click', (e) => e.stopPropagation());
+            document.addEventListener('click', () => {
+                if (window.innerWidth <= 768 && sidebar) sidebar.classList.remove('mobile-active');
+            });
+        });
+    </script>
+</body>
+</html>
